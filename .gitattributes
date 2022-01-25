@@ -1,0 +1,6 @@
+*.umap filter=lfs diff=lfs merge=lfs -text binary
+*.uasset filter=lfs diff=lfs merge=lfs -text binary
+*.uproject filter=lfs diff=lfs merge=lfs -text binary	
+*.wav filter=lfs diff=lfs merge=lfs -text binary	
+*.fbx filter=lfs diff=lfs merge=lfs -text binary
+*.pdb filter=lfs diff=lfs merge=lfs -text
