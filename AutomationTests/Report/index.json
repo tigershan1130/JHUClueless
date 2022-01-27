@@ -1,0 +1,22 @@
+﻿{
+	"clientDescriptor": "//UE5/Release-5.0-EarlyAccess - 16682836 - Windows",
+	"reportCreatedOn": "2022.01.27-17.39.27",
+	"succeeded": 1,
+	"succeededWithWarnings": 0,
+	"failed": 0,
+	"notRun": 0,
+	"totalDuration": 1.9668513536453247,
+	"comparisonExported": true,
+	"comparisonExportDirectory": "D:/UEProject/JHUClueless/AutomationTests/Report/16682836",
+	"tests": [
+		{
+			"testDisplayName": "AT_InitData",
+			"fullTestPath": "Project.Functional Tests./Game/Maps/CluelessGame.AT_InitData",
+			"state": "Success",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		}
+	]
+}
