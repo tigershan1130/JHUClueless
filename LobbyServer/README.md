@@ -1,4 +1,4 @@
-# Online Subsystem Python
+﻿# Online Subsystem Python
 Created by RyroNZ
 
 Online Subsystem Python is a self-hosted online subsystem for Creating, Finding and Joining Sessions over the internet using the standard session nodes. 
@@ -16,7 +16,7 @@ Open your .uproject and add the following add “OnlineSubsystemPython” to the
 ```
 {
     "FileVersion": 3,
-    "EngineAssociation": "4.22",
+    "EngineAssociation": "5.0",
     "Category": "",
     "Description": "",
     "Modules": [
