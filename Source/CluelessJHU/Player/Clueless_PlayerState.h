@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -9,7 +9,7 @@
 
 
 /**
- * 
+ *
  */
 
 UCLASS(BlueprintType, Blueprintable, notplaceable)
@@ -24,7 +24,7 @@ public:
 
 	// for replication
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
+
 
 	UFUNCTION()
 		virtual void OnRep_RoleID();
@@ -44,14 +44,14 @@ private:
 	 * Will only assign a number when user starts the game.
 	*/
 	UPROPERTY(ReplicatedUsing = OnRep_RoleID)
-	int RoleID;
+		int RoleID;
 
 
 	/**
 	 * @brief check player current state it is in, Playing, Waiting or Game End.
 	*/
 	UPROPERTY(ReplicatedUsing = OnRep_StateChanged)
-	int CurrentState;
+		int CurrentState;
 
 
 	/**
@@ -59,12 +59,12 @@ private:
 	 * or should we wait for other's players turn.
 	*/
 	UPROPERTY(ReplicatedUsing = OnRep_GameActionChanged)
-	int CurrentGameAction;
+		int CurrentGameAction;
 
 
 	/**
 	 * @brief This is the current pawn we are controlling.
 	*/
 	UPROPERTY(ReplicatedUsing = OnRep_ChangedPawn)
-	APawn* CurrentControlledPawn;
+		APawn* CurrentControlledPawn;
 };
