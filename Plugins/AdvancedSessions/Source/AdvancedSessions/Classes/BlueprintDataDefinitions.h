@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "CoreMinimal.h"
 //#include "EngineMinimal.h"
 #include "Engine/Engine.h"
@@ -155,16 +155,16 @@ private:
 
 public:
 	TSharedPtr<const FUniqueNetId> UniqueNetId;
-	const FUniqueNetId * UniqueNetIdPtr;
+	const FUniqueNetId* UniqueNetIdPtr;
 
-	void SetUniqueNetId(const TSharedPtr<const FUniqueNetId> &ID)
+	void SetUniqueNetId(const TSharedPtr<const FUniqueNetId>& ID)
 	{
 		bUseDirectPointer = false;
 		UniqueNetIdPtr = nullptr;
 		UniqueNetId = ID;
 	}
 
-	void SetUniqueNetId(const FUniqueNetId *ID)
+	void SetUniqueNetId(const FUniqueNetId* ID)
 	{
 		bUseDirectPointer = true;
 		UniqueNetIdPtr = ID;
@@ -265,17 +265,17 @@ struct FBPFriendInfo
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Online|Friend")
-	FString DisplayName;
+		FString DisplayName;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Online|Friend")
-	FString RealName;
+		FString RealName;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Online|Friend")
-	EBPOnlinePresenceState OnlineState;
+		EBPOnlinePresenceState OnlineState;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Online|Friend")
-	FBPUniqueNetId UniqueNetId;
+		FBPUniqueNetId UniqueNetId;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Online|Friend")
-	bool bIsPlayingSameGame;
+		bool bIsPlayingSameGame;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Online|Friend")
-	FBPFriendPresenceInfo PresenceInfo;
+		FBPFriendPresenceInfo PresenceInfo;
 };
 
 /** The types of comparison operations for a given search query */
@@ -298,7 +298,7 @@ struct FSessionPropertyKeyPair
 {
 	GENERATED_USTRUCT_BODY()
 
-	FName Key;
+		FName Key;
 	FVariantData Data;
 };
 
@@ -308,12 +308,12 @@ USTRUCT(BlueprintType)
 struct FSessionsSearchSetting
 {
 	GENERATED_USTRUCT_BODY()
-	//UPROPERTY()
+		//UPROPERTY()
 
 
-	// Had to make a copy of this to account for the original not being exposed to blueprints
-	/** How is this session setting compared on the backend searches */
-	EOnlineComparisonOpRedux ComparisonOp;
+		// Had to make a copy of this to account for the original not being exposed to blueprints
+		/** How is this session setting compared on the backend searches */
+		EOnlineComparisonOpRedux ComparisonOp;
 
 	// The key pair to search for
 	FSessionPropertyKeyPair PropertyKeyPair;
@@ -338,7 +338,7 @@ public:
 	{
 		UserID.Reset();
 		//return const_cast<FUniqueNetId*>(UniqueNetIdPtr);
-		if (APlayerState* PlayerState = (PlayerController != NULL) ? PlayerController->PlayerState : NULL)
+		if (APlayerState* PlayerState = (PlayerController != nullptr) ? PlayerController->PlayerState : nullptr)
 		{
 			UserID = PlayerState->GetUniqueId().GetUniqueNetId();
 			if (!UserID.IsValid())
