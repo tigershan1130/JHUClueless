@@ -26,6 +26,11 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 
+	
+
+	UFUNCTION()
+		void ChangeGameState(int State);
+
 	UFUNCTION()
 		virtual void OnRep_RoleID();
 
@@ -51,7 +56,7 @@ private:
 	 * @brief check player current state it is in, Playing, Waiting or Game End.
 	*/
 	UPROPERTY(ReplicatedUsing = OnRep_StateChanged)
-		int CurrentState;
+		int CurrentState = 0;
 
 
 	/**
@@ -67,4 +72,5 @@ private:
 	*/
 	UPROPERTY(ReplicatedUsing = OnRep_ChangedPawn)
 		APawn* CurrentControlledPawn;
+
 };

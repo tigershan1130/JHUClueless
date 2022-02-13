@@ -25,5 +25,5 @@ public:
 		FText CharacterName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TAssetPtr<UTexture> texture;
+		TSoftObjectPtr<UTexture> texture;
 };
