@@ -13,7 +13,7 @@ AClueless_PlayerState::AClueless_PlayerState()
 
 void AClueless_PlayerState::PostInitializeComponents()
 {
-
+	Super::PostInitializeComponents();
 
 }
 
@@ -31,8 +31,8 @@ void AClueless_PlayerState::ChangeGameState(int State)
 	CurrentState = State;
 
 	// if it is listen server, we need to call this seperately to invoke replication for state change.
-	//if (GetNetMode() == NM_ListenServer)	
-	//	OnRep_StateChanged();
+	if (GetNetMode() == NM_Standalone)	
+		OnRep_StateChanged();
 	
 }
 
@@ -42,8 +42,6 @@ void AClueless_PlayerState::OnRep_RoleID()
 
 void AClueless_PlayerState::OnRep_StateChanged()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Current State Changed"));
-
 	// called on client, get possessed character
 	AClueCharacter* Character = (AClueCharacter*)GetPawn();
 
