@@ -8,9 +8,9 @@
 
 void UStaticDataSubSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
-	InitStaticData();
-	FString fileName;
-	const UStaticDataSettings& Settings = *GetDefault<UStaticDataSettings>();
+	//InitStaticData();
+	//FString fileName;
+	//const UStaticDataSettings& Settings = *GetDefault<UStaticDataSettings>();
 	//TMap<FString, FString> CommandMap = Settings.CommandList;
 	//TArray<FString> CommandList;
 	//CommandMap.GenerateValueArray(CommandList);
@@ -34,6 +34,7 @@ void UStaticDataSubSystem::InitStaticData()
 	{
 		LoadDataTableStaticData();
 		//Call Other Load Func
+		IsDataBeenInit = true;
 	}
 
 }

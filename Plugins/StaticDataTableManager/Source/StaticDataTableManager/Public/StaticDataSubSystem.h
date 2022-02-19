@@ -106,9 +106,11 @@ public:
 		*(bool*)RESULT_PARAM = bSuccess;
 	}
 
-private:
+
 	UFUNCTION(BlueprintCallable)
 		static UDataTable* GetDataTableByName(const FName& TableName);
+
+private:
 
 	UFUNCTION()
 		void LoadDataTableStaticData();

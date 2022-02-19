@@ -2,32 +2,41 @@
 
 
 #include "Clueless_PlayerState.h"
+#include "Net/UnrealNetwork.h"
+#include "CluelessJHU/Actors/ClueCharacter.h"
 
 AClueless_PlayerState::AClueless_PlayerState()
 {
+	PrimaryActorTick.bCanEverTick = true;
+	bReplicates = true;
 
 }
 
 void AClueless_PlayerState::PostInitializeComponents()
 {
-
+	Super::PostInitializeComponents();
 
 }
 
 void AClueless_PlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AClueless_PlayerState, CurrentState);
 
 
+}
 
+void AClueless_PlayerState::ChangeGameState(int State)
+{
+	CurrentState = State;
+	
 }
 
 void AClueless_PlayerState::OnRep_RoleID()
 {
 }
 
-void AClueless_PlayerState::OnRep_StateChanged()
-{
-}
 
 void AClueless_PlayerState::OnRep_GameActionChanged()
 {
