@@ -46,22 +46,32 @@ public:
 		void ReigsterPlayerControllerOnServer(APlayerController* PlayerController);
 
 
+	/**
+	 * @brief UnRegister player Controller 
+	*/
 	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
 		void UnReigsterPlayerControllerOnServer(APlayerController* PlayerController);
 
+	/**
+	 * @brief Update player 
+	*/
 
 	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
 		void UpdatePlayerControllerWithCharacterOnServer(APlayerController* PlayerController, ACharacter* Character);
 
 
-	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
-	void ReportPlayerClientReady(ACharacter* PlayerCharacter);
+	UFUNCTION()
+		virtual void OnRep_GameStartedChanged();
+
+	UFUNCTION()
+		void OnRep_PlayerCharacterMappingChanged();
 
 
 	UFUNCTION()
-	virtual void OnRep_GameStartedChanged();
-
-
+		TArray<FPlayerCharacterRelationEntry> GetCharatersRelationMapping()
+	{
+		return PlayerRelationMapping.PlayerRelationMapping;
+	}
 
 protected:
 
@@ -74,13 +84,9 @@ protected:
 	TArray<FPlayerSetupStaticData> PlayerSetupStaticData;
 
 
-
 	UPROPERTY()
 	TMap<APlayerController*, ACharacter*> ServerMapPlayerCharacters;
 
-
-	UPROPERTY()
-	TArray<ACharacter*> ReportedClientPlayers;
 
 	// Is our data ready
 	// Is our connected players loaded
@@ -92,4 +98,7 @@ protected:
 	bool IsReadyToStartGame;
 
 
+
+	UPROPERTY(ReplicatedUsing = OnRep_PlayerCharacterMappingChanged)
+		FPlayerRelationsContainer PlayerRelationMapping;
 };

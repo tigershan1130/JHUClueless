@@ -24,18 +24,13 @@ public:
 
 	// for replication
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-
 	
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		void ChangeGameState(int State);
 
 	UFUNCTION()
 		virtual void OnRep_RoleID();
-
-	UFUNCTION()
-		virtual void OnRep_StateChanged();
 
 	UFUNCTION()
 		virtual void OnRep_GameActionChanged();
@@ -43,34 +38,40 @@ public:
 	UFUNCTION()
 		virtual void OnRep_ChangedPawn();
 
-private:
+	UFUNCTION(BlueprintCallable)
+		int GetCurrentGameState()
+	{
+		return CurrentState;
+	}
+
+protected:
 	/**
 	 * @brief Check this player posses which character should be -1 when player is connected
 	 * Will only assign a number when user starts the game.
 	*/
-	UPROPERTY(ReplicatedUsing = OnRep_RoleID)
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_RoleID)
 		int RoleID;
 
 
 	/**
 	 * @brief check player current state it is in, Playing, Waiting or Game End.
 	*/
-	UPROPERTY(ReplicatedUsing = OnRep_StateChanged)
-		int CurrentState = 0;
+	UPROPERTY(BlueprintReadWrite, Replicated)
+		int CurrentState;
 
 
 	/**
 	 * @brief In Game, what kind of state are we in, should we make our move, should we make a suggestion, this will control player's current action
 	 * or should we wait for other's players turn.
 	*/
-	UPROPERTY(ReplicatedUsing = OnRep_GameActionChanged)
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_GameActionChanged)
 		int CurrentGameAction;
 
 
 	/**
 	 * @brief This is the current pawn we are controlling.
 	*/
-	UPROPERTY(ReplicatedUsing = OnRep_ChangedPawn)
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_ChangedPawn)
 		APawn* CurrentControlledPawn;
 
 };

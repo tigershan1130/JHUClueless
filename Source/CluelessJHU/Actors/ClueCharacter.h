@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "CluelessJHU/Data/Game_StaticData.h"
 #include "ClueCharacter.generated.h"
 
 UCLASS()
@@ -19,6 +20,12 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	/**
+	 * @brief Client Ready is false
+	*/
+	UPROPERTY(BlueprintReadOnly)
+	bool ClientReady = false;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -26,31 +33,21 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UFUNCTION(BlueprintCallable)
-		void ServerConnectPlayerControllerWithActor(APlayerController* PlayerController);
 
-	UFUNCTION(BlueprintCallable) // maybe blueprint need to do some stuff before we can call player ready
-		void SetPlayerCharacterReady();
-
-	// Tell server character client is initialized.
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPCClientActorReady();
-
-	// Server validation once recieve rpc from client.
-	// we can prevent invalid access token and DDOS.
-	bool ServerRPCClientActorReady_Validate()
-	{
-		return true;                              // This will allow the RPC to be called
-	}
-
-
-	void ServerRPCClientActorReady_Implementation();
-
-	UFUNCTION()
-		void ClientActorReady();
-
-
-	// this will be called by Player State to notify that character is ready to initialize data.
+	/*
+	* this will be called by Player State to notify that character is ready to initialize data.
+	*/
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
-	void OnPlayerCharacterInitalized();
+		void OnPlayerCharacterInitalized();
+
+	/**
+	 * @brief Onplayer Joined Game With CharacterRelation
+	*/
+	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
+		void OnPlayerCharacterJoinBinded();
+
+private:
+	// this is private function called in tick to check if the player is ready.
+	UFUNCTION()
+		void ClientCheckPlayerReady();
 };

@@ -4,6 +4,8 @@
 #include "CGameStateBase.h"
 #include "Net/UnrealNetwork.h"
 #include "CluelessJHU/Player/Clueless_PlayerState.h"
+#include "CluelessJHU/Actors/ClueCharacter.h"
+#include "CluelessJHU/Utilities/GameplayAPI.h"
 #include "StaticDataTableManager/Public/StaticDataSubSystem.h"
 #include <Runtime/Engine/Classes/Kismet/GameplayStatics.h>
 
@@ -18,7 +20,8 @@ void ACGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ACGameStateBase,IsReadyToStartGame);
+	DOREPLIFETIME(ACGameStateBase, IsReadyToStartGame);
+	DOREPLIFETIME(ACGameStateBase, PlayerRelationMapping);
 }
 
 void ACGameStateBase::PreInitializeComponents()
@@ -71,10 +74,11 @@ TArray<FPlayerSetupStaticData> ACGameStateBase::GetPlayerSetupStaticData()
 }
 
 void ACGameStateBase::ReigsterPlayerControllerOnServer(APlayerController* PlayerController)
-{
-	
+{	
 	if (!ServerMapPlayerCharacters.Contains(PlayerController))
 		ServerMapPlayerCharacters.Add(PlayerController, nullptr);
+
+
 	
 }
 
@@ -88,60 +92,66 @@ void ACGameStateBase::UpdatePlayerControllerWithCharacterOnServer(APlayerControl
 {
 	if (ServerMapPlayerCharacters.Contains(PlayerController))
 	{
-		if(Character != nullptr)
-			ServerMapPlayerCharacters[PlayerController] = Character;
-	}
-}
-
-void ACGameStateBase::ReportPlayerClientReady(ACharacter* PlayerCharacter)
-{
-	if (!ReportedClientPlayers.Contains(PlayerCharacter))
-		ReportedClientPlayers.Add(PlayerCharacter);
-
-	if (ReportedClientPlayers.Num() >= 0)
-	{
-		int PossedNumbers = 0;
-		APlayerController* FoundController = nullptr;
-		// TODO: optimize, currently O(N), but our max players should be not greater than 8, 64 execution is ok.
-		for (auto& PCharacter : ReportedClientPlayers)
+		if (Character != nullptr)
 		{
-			for (auto& Elem : ServerMapPlayerCharacters)
-			{
-				if (Elem.Value == PCharacter)
-				{
-					if (PCharacter == PlayerCharacter)
-						FoundController = Elem.Key;
+			ServerMapPlayerCharacters[PlayerController] = Character;
 
-					PossedNumbers++;
+			bool Found = false;
+
+			for (auto& Entry : PlayerRelationMapping.PlayerRelationMapping)
+			{
+				Found = (Entry.Character == Character);
+				if (Found)
+					break;
+			}
+			
+			if (!Found)
+			{
+				FPlayerCharacterRelationEntry CharacterRelationEntry;
+
+				CharacterRelationEntry.Character = Character;
+				CharacterRelationEntry.Index = PlayerRelationMapping.PlayerRelationMapping.Num();
+
+				PlayerRelationMapping.PlayerRelationMapping.Add(CharacterRelationEntry);
+
+				PlayerRelationMapping.MarkArrayDirty();
+
+				if (GetNetMode() == NM_ListenServer)
+				{
+					OnRep_PlayerCharacterMappingChanged();
 				}
 			}
 		}
-
-		UE_LOG(LogTemp, Warning, TEXT("Connect Possed Players Numbers  %d"), PossedNumbers);
-		if (FoundController != nullptr)
-		{
-			APlayerState* CurrentPlayerState = FoundController->GetPlayerState<APlayerState>();
-
-			if (CurrentPlayerState != nullptr)
-			{
-				AClueless_PlayerState* CPlayerState = (AClueless_PlayerState*)(CurrentPlayerState);
-
-				if (CPlayerState != nullptr)
-					CPlayerState->ChangeGameState(1);
-			}
-
-		}
-
-		// we are ready to start our game.
-		if (PossedNumbers > 0)
-		{
-			IsReadyToStartGame = true;
-		}
 	}
 }
 
+/**
+ * @brief 
+*/
 void ACGameStateBase::OnRep_GameStartedChanged()
 {
+
+
+}
+
+/**
+ * @brief 
+*/
+void ACGameStateBase::OnRep_PlayerCharacterMappingChanged()
+{
+	for (auto& Entry : PlayerRelationMapping.PlayerRelationMapping)
+	{
+		AClueCharacter* ClueCharacter = (AClueCharacter*)Entry.Character;
+
+		if (ClueCharacter != nullptr)
+		{
+			if (ClueCharacter->IsLocallyControlled())
+			{
+				ClueCharacter->OnPlayerCharacterJoinBinded();
+
+			}
+		}
+	}
 
 
 }

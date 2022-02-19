@@ -21,26 +21,33 @@ AClueCharacter::AClueCharacter()
 void AClueCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
-
-	// initialize Player stuff
 }
 
-void AClueCharacter::SetPlayerCharacterReady()
-{	
-	// if client Tell server actor we are ready	
-	ENetMode NetMode = GetNetOwner()->GetNetMode();
+void AClueCharacter::ClientCheckPlayerReady()
+{
+	if (IsLocallyControlled())
+	{
+		if (!ClientReady)
+		{
+			APlayerState* CPlayerState = GetPlayerState();
 
-	if (NetMode == ENetMode::NM_Client || NetMode == ENetMode::NM_Standalone)
-		ServerRPCClientActorReady();
-	//else if (NetMode == ENetMode::NM_ListenServer)
-	//	ClientActorReady();
+			AClueless_PlayerState* CluelessPlayerState = (AClueless_PlayerState*)CPlayerState;
+
+			if (CluelessPlayerState != nullptr && CluelessPlayerState->GetCurrentGameState() > 0) // player state is already synced if it is not 0
+			{
+				OnPlayerCharacterInitalized();
+				ClientReady = true;
+			}
+		}
+	}
 }
 
 // Called every frame
 void AClueCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	ClientCheckPlayerReady();
 
 }
 
@@ -50,27 +57,4 @@ void AClueCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
-
-void AClueCharacter::ServerConnectPlayerControllerWithActor(APlayerController* PlayerController)
-{
-	ACGameStateBase* const MyGameState = GetWorld() != NULL ? GetWorld()->GetGameState<ACGameStateBase>() : NULL;
-
-	MyGameState->UpdatePlayerControllerWithCharacterOnServer(PlayerController, this);
-
-}
-
-// this is RPC from client ->server 
-void AClueCharacter::ServerRPCClientActorReady_Implementation()
-{
-	ClientActorReady();
-}
-
-void AClueCharacter::ClientActorReady()
-{
-	ACGameStateBase* const MyGameState = GetWorld() != NULL ? GetWorld()->GetGameState<ACGameStateBase>() : NULL;
-
-	MyGameState->ReportPlayerClientReady(this);
-}
-
-
 
