@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -10,13 +10,13 @@
 
 class AClueless_PlayerState;
 /**
- * 
+ *
  */
 UCLASS()
 class CLUELESSJHU_API ACGameStateBase : public AGameStateBase
 {
 	GENERATED_BODY()
-	
+
 
 public:
 	// Constructor
@@ -47,13 +47,13 @@ public:
 
 
 	/**
-	 * @brief UnRegister player Controller 
+	 * @brief UnRegister player Controller
 	*/
 	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
 		void UnReigsterPlayerControllerOnServer(APlayerController* PlayerController);
 
 	/**
-	 * @brief Update player 
+	 * @brief Update player
 	*/
 
 	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
@@ -73,32 +73,46 @@ public:
 		return PlayerRelationMapping.PlayerRelationMapping;
 	}
 
+	UFUNCTION()
+		TArray<ACharacter*> GetActivePlayerCharacters();
+
+
 protected:
 
 	UFUNCTION()
-	void CheckGameIsReadyToStart();
+		void CheckGameIsReadyToStart();
 
 
-	// localized data
+	/**
+	 * @brief Data table for character and role mapping
+	*/
 	UPROPERTY()
-	TArray<FPlayerSetupStaticData> PlayerSetupStaticData;
+		TArray<FPlayerSetupStaticData> PlayerSetupStaticData;
 
 
+	/**
+	 * @brief  This holds registered
+	*/
 	UPROPERTY()
-	TMap<APlayerController*, ACharacter*> ServerMapPlayerCharacters;
+		TMap<APlayerController*, ACharacter*> ServerMapPlayerCharacters;
 
 
-	// Is our data ready
-	// Is our connected players loaded
-	UPROPERTY()
-	TMap<FString, bool> SystemStatusMap;
-
-	
+	/**
+	 * @brief This use to set if our game is ready to start, if it is
+	 * on Host Client will show StartGame button, this is used with listen server option.
+	*/
 	UPROPERTY(ReplicatedUsing = OnRep_GameStartedChanged)
-	bool IsReadyToStartGame;
+		bool HostReadyToStartGame;
 
+	/**
+	 * @brief GameState that modifies current game
+	*/
+	UPROPERTY()
+		int GameState;
 
-
+	/**
+	 * @brief Use to replicate between server and client, holds relation mapping between PlayerSetupStaticData and PlayerCharacter
+	*/
 	UPROPERTY(ReplicatedUsing = OnRep_PlayerCharacterMappingChanged)
 		FPlayerRelationsContainer PlayerRelationMapping;
 };

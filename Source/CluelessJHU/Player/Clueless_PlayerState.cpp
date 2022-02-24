@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Clueless_PlayerState.h"
@@ -22,26 +22,30 @@ void AClueless_PlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AClueless_PlayerState, CurrentState);
+	DOREPLIFETIME(AClueless_PlayerState, CurrentPlayerState);
 
 
 }
 
 void AClueless_PlayerState::ChangeGameState(int State)
 {
-	CurrentState = State;
-	
+	CurrentPlayerState = State;
+
 }
 
 void AClueless_PlayerState::OnRep_RoleID()
 {
+
 }
 
 
 void AClueless_PlayerState::OnRep_GameActionChanged()
 {
+
 }
+
 
 void AClueless_PlayerState::OnRep_ChangedPawn()
 {
+
 }

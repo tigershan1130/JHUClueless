@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -24,9 +24,9 @@ protected:
 	 * @brief Client Ready is false
 	*/
 	UPROPERTY(BlueprintReadOnly)
-	bool ClientReady = false;
+		bool ClientReady = false;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -46,8 +46,24 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
 		void OnPlayerCharacterJoinBinded();
 
+
+	/**
+	 * @brief
+	*/
+	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
+		void OnHostReadyStartGame();
+
+	/**
+	 * @brief
+	*/
+	//UFUNCTION(BlueprintCallable, Server, Reliable)
+	//	void ServerRPCSetGameStart();
+
 private:
 	// this is private function called in tick to check if the player is ready.
 	UFUNCTION()
 		void ClientCheckPlayerReady();
+
+
+
 };

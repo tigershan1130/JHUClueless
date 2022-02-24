@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "CGameStateBase.h"
@@ -20,7 +20,7 @@ void ACGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ACGameStateBase, IsReadyToStartGame);
+	DOREPLIFETIME_CONDITION(ACGameStateBase, HostReadyToStartGame, COND_OwnerOnly);
 	DOREPLIFETIME(ACGameStateBase, PlayerRelationMapping);
 }
 
@@ -33,13 +33,13 @@ void ACGameStateBase::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	UWorld* World = GetWorld();
-	
+
 }
 
 void ACGameStateBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 void ACGameStateBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -74,18 +74,18 @@ TArray<FPlayerSetupStaticData> ACGameStateBase::GetPlayerSetupStaticData()
 }
 
 void ACGameStateBase::ReigsterPlayerControllerOnServer(APlayerController* PlayerController)
-{	
+{
 	if (!ServerMapPlayerCharacters.Contains(PlayerController))
 		ServerMapPlayerCharacters.Add(PlayerController, nullptr);
 
 
-	
+
 }
 
 void ACGameStateBase::UnReigsterPlayerControllerOnServer(APlayerController* PlayerController)
-{	
+{
 	if (ServerMapPlayerCharacters.Contains(PlayerController))
-		ServerMapPlayerCharacters.Remove(PlayerController);	
+		ServerMapPlayerCharacters.Remove(PlayerController);
 }
 
 void ACGameStateBase::UpdatePlayerControllerWithCharacterOnServer(APlayerController* PlayerController, ACharacter* Character)
@@ -104,7 +104,7 @@ void ACGameStateBase::UpdatePlayerControllerWithCharacterOnServer(APlayerControl
 				if (Found)
 					break;
 			}
-			
+
 			if (!Found)
 			{
 				FPlayerCharacterRelationEntry CharacterRelationEntry;
@@ -123,19 +123,47 @@ void ACGameStateBase::UpdatePlayerControllerWithCharacterOnServer(APlayerControl
 			}
 		}
 	}
+
+	// get active characters
+	TArray<ACharacter*> ActiveCharacters = GetActivePlayerCharacters();
+
+	// if current active characters is bigger than or equal to 3, we can start our game if I am the host
+	if (ActiveCharacters.Num() >= 3)
+	{
+		if (GetNetMode() == NM_ListenServer)
+		{
+			HostReadyToStartGame = true;
+			OnRep_GameStartedChanged();
+		}
+	}
 }
 
 /**
- * @brief 
+ * @brief Ok, 3 Players are inside game, let's start game.
 */
 void ACGameStateBase::OnRep_GameStartedChanged()
 {
+	// If Host Ready to Start game
+	if (HostReadyToStartGame)
+	{
+		// The only logic can reach here is because I am the host...
+		// let's enable our start game button
+		for (auto& Entry : PlayerRelationMapping.PlayerRelationMapping)
+		{
+			AClueCharacter* ClueCharacter = (AClueCharacter*)Entry.Character;
 
-
+			if (ClueCharacter != nullptr)
+			{
+				if (ClueCharacter->IsLocallyControlled())
+					ClueCharacter->OnHostReadyStartGame();
+			}
+		}
+	}
 }
 
 /**
- * @brief 
+ * @brief This mapping is updated every time relation is changed or player joined.
+ * when refreshing character and role relation
 */
 void ACGameStateBase::OnRep_PlayerCharacterMappingChanged()
 {
@@ -154,6 +182,20 @@ void ACGameStateBase::OnRep_PlayerCharacterMappingChanged()
 	}
 
 
+}
+
+TArray<ACharacter*> ACGameStateBase::GetActivePlayerCharacters()
+{
+	TArray<ACharacter*> ActiveCharacters;
+
+	for (auto& Entry : ServerMapPlayerCharacters)
+	{
+		if (Entry.Value != nullptr)
+			ActiveCharacters.Add(Entry.Value);
+
+	}
+
+	return ActiveCharacters;
 }
 
 void ACGameStateBase::CheckGameIsReadyToStart()

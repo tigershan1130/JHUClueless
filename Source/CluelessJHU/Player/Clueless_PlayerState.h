@@ -24,7 +24,7 @@ public:
 
 	// for replication
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
+
 
 	UFUNCTION(BlueprintCallable)
 		void ChangeGameState(int State);
@@ -41,7 +41,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 		int GetCurrentGameState()
 	{
-		return CurrentState;
+		return CurrentPlayerState;
 	}
 
 protected:
@@ -57,7 +57,7 @@ protected:
 	 * @brief check player current state it is in, Playing, Waiting or Game End.
 	*/
 	UPROPERTY(BlueprintReadWrite, Replicated)
-		int CurrentState;
+		int CurrentPlayerState;
 
 
 	/**

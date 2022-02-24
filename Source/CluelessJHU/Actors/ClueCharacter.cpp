@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "ClueCharacter.h"
@@ -9,7 +9,7 @@
 // Sets default values
 AClueCharacter::AClueCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	// set replication to true
@@ -22,6 +22,12 @@ void AClueCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 }
+
+//void AClueCharacter::ServerRPCSetGameStart()
+//{
+//
+//
+//}
 
 void AClueCharacter::ClientCheckPlayerReady()
 {
