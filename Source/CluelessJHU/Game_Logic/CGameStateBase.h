@@ -9,9 +9,16 @@
 #include "CGameStateBase.generated.h"
 
 class AClueless_PlayerState;
-/**
- *
- */
+
+
+UENUM()
+enum ClueGameState
+{
+	PreGaming	UMETA(DisplayName = "Pre Gaming"),
+	Gaming		UMETA(DisplayName = "Gaming"),
+	PostGaming	UMETA(DisplayName = "Post Gaming"),
+};
+
 UCLASS()
 class CLUELESSJHU_API ACGameStateBase : public AGameStateBase
 {
@@ -60,11 +67,23 @@ public:
 		void UpdatePlayerControllerWithCharacterOnServer(APlayerController* PlayerController, ACharacter* Character);
 
 
+	/**
+	 * @brief Replication when game is about start host have to manually start
+	*/
 	UFUNCTION()
 		virtual void OnRep_GameStartedChanged();
 
+	/**
+	 * @brief Player character mapping changed to update our pre-game UI
+	*/
 	UFUNCTION()
 		void OnRep_PlayerCharacterMappingChanged();
+
+	/**
+	 * @brief When this changed, we need to change our UI.
+	*/
+	UFUNCTION()
+		void OnRep_GameStateChanged();
 
 
 	UFUNCTION()
@@ -76,12 +95,27 @@ public:
 	UFUNCTION()
 		TArray<ACharacter*> GetActivePlayerCharacters();
 
+	// Get game state called from GameAPI
+	UFUNCTION()
+		ClueGameState GetGameState()
+	{
+		return CGameState;
+	}
+
+
+	// called by server only.
+	UFUNCTION()
+		void ChangeGameState(ClueGameState CurrentGameState)
+	{
+		if (GIsServer)
+		{
+			CGameState = CurrentGameState;
+
+			OnRep_GameStateChanged();
+		}
+	}
 
 protected:
-
-	UFUNCTION()
-		void CheckGameIsReadyToStart();
-
 
 	/**
 	 * @brief Data table for character and role mapping
@@ -107,8 +141,8 @@ protected:
 	/**
 	 * @brief GameState that modifies current game
 	*/
-	UPROPERTY()
-		int GameState;
+	UPROPERTY(ReplicatedUsing = OnRep_GameStateChanged)
+		TEnumAsByte<ClueGameState> CGameState;
 
 	/**
 	 * @brief Use to replicate between server and client, holds relation mapping between PlayerSetupStaticData and PlayerCharacter

@@ -23,7 +23,7 @@ public:
 	 * @brief 
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
-	static 	TArray<FPlayerSetupStaticData> GetPlayerStaticSetupData(UObject* WorldContextObj)
+	static TArray<FPlayerSetupStaticData> GetPlayerStaticSetupData(UObject* WorldContextObj)
 	{
 		TArray<FPlayerSetupStaticData> PlayerStaticSetupData;
 
@@ -85,10 +85,10 @@ public:
 
 
 	/**
-	*
+	* Update player character into Mapping.
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
-		static 	void UpdatePlayerControllerWithCharacter(ACharacter* CurrentCharacter, APlayerController* PlayerController, UObject* WorldContextObj)
+	static 	void UpdatePlayerControllerWithCharacter(ACharacter* CurrentCharacter, APlayerController* PlayerController, UObject* WorldContextObj)
 	{
 		TArray<FPlayerSetupStaticData> PlayerStaticSetupData;
 
@@ -105,5 +105,29 @@ public:
 		GameState->UpdatePlayerControllerWithCharacterOnServer(PlayerController, CurrentCharacter);
 	}
 
+
+
+	/**
+	* Get Game State, Readonly
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
+		static 	ClueGameState GetCurrentGameState(UObject* WorldContextObj)
+	{
+		TArray<FPlayerSetupStaticData> PlayerStaticSetupData;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return ClueGameState::PreGaming;
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return ClueGameState::PreGaming;
+
+		return GameState->GetGameState();
+
+		
+	}
 
 };

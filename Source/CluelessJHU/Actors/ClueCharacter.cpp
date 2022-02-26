@@ -23,12 +23,20 @@ void AClueCharacter::BeginPlay()
 	Super::BeginPlay();
 }
 
-//void AClueCharacter::ServerRPCSetGameStart()
-//{
-//
-//
-//}
+// Check Server RPC set Game Start Implementation
+void AClueCharacter::ServerRPCSetGameStart_Implementation()
+{
+	ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
 
+	if (GameState == nullptr)
+		return;
+
+	// TODO: Make this GameAPI static Function
+	GameState->ChangeGameState(ClueGameState::Gaming);
+}
+
+
+// check if client is ready
 void AClueCharacter::ClientCheckPlayerReady()
 {
 	if (IsLocallyControlled())

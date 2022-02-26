@@ -22,6 +22,7 @@ void ACGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 
 	DOREPLIFETIME_CONDITION(ACGameStateBase, HostReadyToStartGame, COND_OwnerOnly);
 	DOREPLIFETIME(ACGameStateBase, PlayerRelationMapping);
+	DOREPLIFETIME(ACGameStateBase, CGameState);
 }
 
 void ACGameStateBase::PreInitializeComponents()
@@ -33,6 +34,8 @@ void ACGameStateBase::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	UWorld* World = GetWorld();
+
+	CGameState = ClueGameState::PreGaming;
 
 }
 
@@ -173,17 +176,35 @@ void ACGameStateBase::OnRep_PlayerCharacterMappingChanged()
 
 		if (ClueCharacter != nullptr)
 		{
-			if (ClueCharacter->IsLocallyControlled())
-			{
-				ClueCharacter->OnPlayerCharacterJoinBinded();
-
-			}
+			if (ClueCharacter->IsLocallyControlled())			
+				ClueCharacter->OnPlayerCharacterJoinBinded();			
 		}
 	}
 
 
 }
 
+/**
+ * @brief When game state is changed
+*/
+void ACGameStateBase::OnRep_GameStateChanged()
+{
+	for (auto& Entry : PlayerRelationMapping.PlayerRelationMapping)
+	{
+		AClueCharacter* ClueCharacter = (AClueCharacter*)Entry.Character;
+
+		if (ClueCharacter != nullptr)
+		{
+			if (ClueCharacter->IsLocallyControlled())			
+				ClueCharacter->OnGameStateChanged();
+			
+		}
+	}
+}
+
+/*
+* Get current characters roles that's already been possessed.
+*/
 TArray<ACharacter*> ACGameStateBase::GetActivePlayerCharacters()
 {
 	TArray<ACharacter*> ActiveCharacters;
@@ -196,9 +217,4 @@ TArray<ACharacter*> ACGameStateBase::GetActivePlayerCharacters()
 	}
 
 	return ActiveCharacters;
-}
-
-void ACGameStateBase::CheckGameIsReadyToStart()
-{
-	//if()
 }

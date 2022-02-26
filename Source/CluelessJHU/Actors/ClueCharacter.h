@@ -46,6 +46,12 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
 		void OnPlayerCharacterJoinBinded();
 
+	/**
+	 * @brief this is for base player setup when game state has changed.
+	*/
+	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
+		void OnGameStateChanged();
+
 
 	/**
 	 * @brief
@@ -53,11 +59,10 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
 		void OnHostReadyStartGame();
 
-	/**
-	 * @brief
-	*/
-	//UFUNCTION(BlueprintCallable, Server, Reliable)
-	//	void ServerRPCSetGameStart();
+	
+	UFUNCTION(BlueprintCallable, Reliable, Server)
+		void ServerRPCSetGameStart();
+	void ServerRPCSetGameStart_Implementation();
 
 private:
 	// this is private function called in tick to check if the player is ready.
