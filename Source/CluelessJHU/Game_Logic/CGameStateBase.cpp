@@ -202,6 +202,16 @@ void ACGameStateBase::OnRep_GameStateChanged()
 	}
 }
 
+
+/**
+ * @brief When somebody ended her turn to next player
+*/
+void ACGameStateBase::OnRep_TurnChanged()
+{
+
+
+}
+
 /*
 * Get current characters roles that's already been possessed.
 */

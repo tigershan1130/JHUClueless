@@ -85,6 +85,9 @@ public:
 	UFUNCTION()
 		void OnRep_GameStateChanged();
 
+	UFUNCTION()
+		void OnRep_TurnChanged();
+
 
 	UFUNCTION()
 		TArray<FPlayerCharacterRelationEntry> GetCharatersRelationMapping()
@@ -149,4 +152,11 @@ protected:
 	*/
 	UPROPERTY(ReplicatedUsing = OnRep_PlayerCharacterMappingChanged)
 		FPlayerRelationsContainer PlayerRelationMapping;
-};
+
+
+	/**
+	 * @brief When turn changed we keep player's turn using this data.
+	*/
+	UPROPERTY(ReplicatedUsing = OnRep_TurnChanged)
+		int PlayerTurn;
+}; 

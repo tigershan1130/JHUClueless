@@ -44,6 +44,9 @@ public:
 };
 
 
+
+
+
 USTRUCT(BlueprintType)
 struct FPlayerCharacterRelationEntry : public FFastArraySerializerItem
 {
