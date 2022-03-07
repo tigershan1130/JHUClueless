@@ -130,4 +130,22 @@ public:
 		
 	}
 
+
+	// This will change the game state of the current game.
+	// should be called on server
+	UFUNCTION(BlueprintCallable, Category = "Gamplay  API", meta = (WorldContext = "WorldContextObj"))
+		static void ChangeClueGameState(ClueGameState State, UObject* WorldContextObj)
+	{
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (World == nullptr)
+			return;
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return;
+
+		GameState->ChangeGameState(State);
+	}
 };

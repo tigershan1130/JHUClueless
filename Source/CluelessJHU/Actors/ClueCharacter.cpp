@@ -3,6 +3,7 @@
 
 #include "ClueCharacter.h"
 #include "Kismet/GameplayStatics.h"
+#include "CluelessJHU/Utilities/GameplayAPI.h"
 #include "CluelessJHU/Player/Clueless_PlayerState.h"
 #include "CluelessJHU/Game_Logic/CGameStateBase.h"
 
@@ -26,13 +27,8 @@ void AClueCharacter::BeginPlay()
 // Check Server RPC set Game Start Implementation
 void AClueCharacter::ServerRPCSetGameStart_Implementation()
 {
-	ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
-
-	if (GameState == nullptr)
-		return;
-
-	// TODO: Make this GameAPI static Function
-	GameState->ChangeGameState(ClueGameState::Gaming);
+	// send mssage to server, here this message is already on server
+	UGameplayAPI::ChangeClueGameState(ClueGameState::Gaming, (UObject*)this);
 }
 
 

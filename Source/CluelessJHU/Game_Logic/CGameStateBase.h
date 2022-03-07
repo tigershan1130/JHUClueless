@@ -48,10 +48,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
 		TArray<FPlayerSetupStaticData>  GetPlayerSetupStaticData();
 
-	// Check if game is ready
+	/**
+	 * @brief when player connects to game mode.
+	*/
 	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
 		void ReigsterPlayerControllerOnServer(APlayerController* PlayerController);
-
 
 	/**
 	 * @brief UnRegister player Controller
@@ -60,12 +61,10 @@ public:
 		void UnReigsterPlayerControllerOnServer(APlayerController* PlayerController);
 
 	/**
-	 * @brief Update player
+	 * @brief Update player when player gets possed
 	*/
-
 	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
 		void UpdatePlayerControllerWithCharacterOnServer(APlayerController* PlayerController, ACharacter* Character);
-
 
 	/**
 	 * @brief Replication when game is about start host have to manually start
@@ -85,38 +84,40 @@ public:
 	UFUNCTION()
 		void OnRep_GameStateChanged();
 
+	/**
+	 * @brief when turn has changed.
+	*/
 	UFUNCTION()
 		void OnRep_TurnChanged();
 
 
+	/**
+	 * @brief Get Current player and character relation mapping, character are possed character
+	*/
 	UFUNCTION()
 		TArray<FPlayerCharacterRelationEntry> GetCharatersRelationMapping()
 	{
 		return PlayerRelationMapping.PlayerRelationMapping;
 	}
 
+	/**
+	 * @brief Get Current active players
+	*/
 	UFUNCTION()
-		TArray<ACharacter*> GetActivePlayerCharacters();
+	TArray<ACharacter*> GetActivePlayerCharacters();
 
 	// Get game state called from GameAPI
 	UFUNCTION()
-		ClueGameState GetGameState()
+	ClueGameState GetGameState()
 	{
 		return CGameState;
 	}
 
-
 	// called by server only.
+	// It will change our server' game state
 	UFUNCTION()
-		void ChangeGameState(ClueGameState CurrentGameState)
-	{
-		if (GIsServer)
-		{
-			CGameState = CurrentGameState;
+		void ChangeGameState(ClueGameState CurrentGameState);
 
-			OnRep_GameStateChanged();
-		}
-	}
 
 protected:
 
@@ -125,7 +126,6 @@ protected:
 	*/
 	UPROPERTY()
 		TArray<FPlayerSetupStaticData> PlayerSetupStaticData;
-
 
 	/**
 	 * @brief  This holds registered
@@ -159,4 +159,12 @@ protected:
 	*/
 	UPROPERTY(ReplicatedUsing = OnRep_TurnChanged)
 		int PlayerTurn;
+
+	
+	/**
+	 * @brief The murder deck.
+	*/
+	UPROPERTY(Replicated)
+		TArray<FCardEntityData> MurderDeck;
+
 }; 

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "CluelessJHU/Game_Logic/CGameStateBase.h"
 #include "CluelessJHU/Data/Game_StaticData.h"
 #include "ClueCharacter.generated.h"
 
@@ -50,7 +51,7 @@ public:
 	 * @brief this is for base player setup when game state has changed.
 	*/
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
-		void OnGameStateChanged();
+		void OnGameStateChanged(ClueGameState State);
 
 
 	/**
@@ -60,6 +61,9 @@ public:
 		void OnHostReadyStartGame();
 
 	
+	/**
+	 * @brief Interface message, send message to server to ask server to start the game.
+	*/
 	UFUNCTION(BlueprintCallable, Reliable, Server)
 		void ServerRPCSetGameStart();
 	void ServerRPCSetGameStart_Implementation();

@@ -23,12 +23,9 @@ void UClueGameTurnBasedSystem::BeginPlay()
 	
 }
 
-
-// Called every frame
-void UClueGameTurnBasedSystem::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UClueGameTurnBasedSystem::OnGameInit()
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	UE_LOG(LogTemp, Warning, TEXT("[ClueGameTurnBasedSystem] Game Initialized"));
 
-	// ...
+
 }
-

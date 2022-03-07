@@ -44,6 +44,36 @@ public:
 };
 
 
+USTRUCT(BlueprintType,  Blueprintable)
+struct FCardEntityData : public FTableRowBase
+{
+	GENERATED_USTRUCT_BODY();
+
+public:
+
+	// Card ID
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int ID;
+
+	// 0 for character
+	// 1 for item
+	// 2 for Room
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int Type;
+
+	// so if 0 for character, we can then use RelationID to go to character table to find more data.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int RelationID;
+
+
+	// card name if needed.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FText CardName;
+
+	// card description if needed
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FText Description;
+};
 
 
 

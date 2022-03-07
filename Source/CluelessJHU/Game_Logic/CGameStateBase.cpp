@@ -5,6 +5,7 @@
 #include "Net/UnrealNetwork.h"
 #include "CluelessJHU/Player/Clueless_PlayerState.h"
 #include "CluelessJHU/Actors/ClueCharacter.h"
+#include "ClueGameTurnBasedSystem.h"
 #include "CluelessJHU/Utilities/GameplayAPI.h"
 #include "StaticDataTableManager/Public/StaticDataSubSystem.h"
 #include <Runtime/Engine/Classes/Kismet/GameplayStatics.h>
@@ -16,11 +17,13 @@ ACGameStateBase::ACGameStateBase()
 
 }
 
+// what's all the data we need to sync.
 void ACGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(ACGameStateBase, HostReadyToStartGame, COND_OwnerOnly);
+	DOREPLIFETIME(ACGameStateBase, MurderDeck);
 	DOREPLIFETIME(ACGameStateBase, PlayerRelationMapping);
 	DOREPLIFETIME(ACGameStateBase, CGameState);
 }
@@ -50,6 +53,10 @@ void ACGameStateBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
+/**
+ * @brief 
+ * @return 
+*/
 TArray<FPlayerSetupStaticData> ACGameStateBase::GetPlayerSetupStaticData()
 {
 	if (PlayerSetupStaticData.Num() == 0)
@@ -76,6 +83,10 @@ TArray<FPlayerSetupStaticData> ACGameStateBase::GetPlayerSetupStaticData()
 	return PlayerSetupStaticData;
 }
 
+/**
+ * @brief when player connects from game mode
+ * @param PlayerController 
+*/
 void ACGameStateBase::ReigsterPlayerControllerOnServer(APlayerController* PlayerController)
 {
 	if (!ServerMapPlayerCharacters.Contains(PlayerController))
@@ -85,12 +96,22 @@ void ACGameStateBase::ReigsterPlayerControllerOnServer(APlayerController* Player
 
 }
 
+
+/**
+ * @brief  when player disconnects from game mode
+ * @param PlayerController 
+*/
 void ACGameStateBase::UnReigsterPlayerControllerOnServer(APlayerController* PlayerController)
 {
 	if (ServerMapPlayerCharacters.Contains(PlayerController))
 		ServerMapPlayerCharacters.Remove(PlayerController);
 }
 
+/**
+ * @brief When a player Controller posses a Character, both are passed in
+ * @param PlayerController 
+ * @param Character 
+*/
 void ACGameStateBase::UpdatePlayerControllerWithCharacterOnServer(APlayerController* PlayerController, ACharacter* Character)
 {
 	if (ServerMapPlayerCharacters.Contains(PlayerController))
@@ -189,6 +210,8 @@ void ACGameStateBase::OnRep_PlayerCharacterMappingChanged()
 */
 void ACGameStateBase::OnRep_GameStateChanged()
 {
+
+	// game state has changed, we notify all the clue character players
 	for (auto& Entry : PlayerRelationMapping.PlayerRelationMapping)
 	{
 		AClueCharacter* ClueCharacter = (AClueCharacter*)Entry.Character;
@@ -196,7 +219,7 @@ void ACGameStateBase::OnRep_GameStateChanged()
 		if (ClueCharacter != nullptr)
 		{
 			if (ClueCharacter->IsLocallyControlled())			
-				ClueCharacter->OnGameStateChanged();
+				ClueCharacter->OnGameStateChanged(CGameState);
 			
 		}
 	}
@@ -227,4 +250,40 @@ TArray<ACharacter*> ACGameStateBase::GetActivePlayerCharacters()
 	}
 
 	return ActiveCharacters;
+}
+
+
+/**
+ * @brief Change Current game state.
+ * @param CurrentGameState 
+*/
+void ACGameStateBase::ChangeGameState(ClueGameState CurrentGameState)
+{
+	if (GIsServer)
+	{
+		// if we are switching from pregaming state to start gaming start
+		// THIS IS VERY IMPORTANT FUNCTION, it is invoked when client starts the game.
+		if (CurrentGameState == ClueGameState::Gaming && CGameState == ClueGameState::PreGaming)
+		{
+			// TODO: init game on server
+			AGameModeBase* GM = UGameplayStatics::GetGameMode(GetWorld());
+			if (!GM) {
+				UE_LOG(LogTemp, Warning, TEXT("GM from Client is not Valid"));
+			}
+			else
+			{
+				UClueGameTurnBasedSystem* TurnBasedGameModeComp = (UClueGameTurnBasedSystem*)GM->GetComponentByClass(UClueGameTurnBasedSystem::StaticClass());
+
+				if (TurnBasedGameModeComp)
+				{
+					TurnBasedGameModeComp->OnGameInit();
+				}
+			}
+		}
+		
+		CGameState = CurrentGameState;
+
+		OnRep_GameStateChanged();
+	}
+
 }
