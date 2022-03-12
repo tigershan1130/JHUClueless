@@ -24,6 +24,9 @@ void UChatSysBasePlayerStateComponent::GetLifetimeReplicatedProps(TArray<FLifeti
 	FDoRepLifetimeParams SharedParams;
 	SharedParams.bIsPushBased = true;
 	SharedParams.Condition = COND_ReplayOrOwner;
+
+	DOREPLIFETIME(UChatSysBasePlayerStateComponent, Index);
+
 }
 
 // Called when the game starts

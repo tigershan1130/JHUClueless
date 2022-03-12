@@ -23,6 +23,7 @@ void AClueless_PlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AClueless_PlayerState, CurrentPlayerState);
+	DOREPLIFETIME(AClueless_PlayerState, RoleID);
 
 
 }

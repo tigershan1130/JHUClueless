@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "ChatSystem/Data/ChatSystemDynamicData.h"
+#include "ChatSysBasePlayerStateComponent.h"
 
 #include "ChatSystemBaseGameStateComponent.generated.h"
 
@@ -53,6 +54,8 @@ public:
 	{
 		Index = ChatPlayers.Num();
 		ChatPlayers.Add(ChatPlayer);
+
+		ChatPlayer->SetChatIndex(Index);
 	};
 
 	UFUNCTION()

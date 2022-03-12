@@ -38,11 +38,17 @@ protected:
 
 
 public:
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION()
 		void SetChatIndex(int32 ChatIndex)
 	{
 		Index = ChatIndex;
 	};
+
+	UFUNCTION(BlueprintCallable, Category = "ChatSystem")
+		int GetChatIndex()
+	{
+		return Index;
+	}
 #pragma region SendMessage
 
 public:
@@ -57,11 +63,7 @@ public:
 		void ServerSendChatMessage(FSingleChatMessage ChatMessage);
 
 
-	UFUNCTION(BlueprintCallable, Category = "ChatSystem")
-		int GetChatIndex()
-	{
-		return Index;
-	}
+
 
 #pragma endregion
 
