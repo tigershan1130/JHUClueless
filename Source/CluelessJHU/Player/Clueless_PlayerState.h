@@ -44,6 +44,12 @@ public:
 		return CurrentPlayerState;
 	}
 
+	UFUNCTION()
+		void SetRoleID(int ID)
+	{
+		RoleID = ID;
+	}
+
 protected:
 	/**
 	 * @brief Check this player posses which character should be -1 when player is connected

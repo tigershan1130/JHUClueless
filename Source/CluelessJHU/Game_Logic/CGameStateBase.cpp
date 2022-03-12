@@ -136,6 +136,11 @@ void ACGameStateBase::UpdatePlayerControllerWithCharacterOnServer(APlayerControl
 				CharacterRelationEntry.Character = Character;
 				CharacterRelationEntry.Index = PlayerRelationMapping.PlayerRelationMapping.Num();
 
+				if (PlayerController->GetPlayerState<AClueless_PlayerState>())
+				{
+					PlayerController->GetPlayerState<AClueless_PlayerState>()->SetRoleID(CharacterRelationEntry.Index);
+				}
+
 				PlayerRelationMapping.PlayerRelationMapping.Add(CharacterRelationEntry);
 
 				PlayerRelationMapping.MarkArrayDirty();

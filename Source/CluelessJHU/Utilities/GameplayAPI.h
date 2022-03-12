@@ -105,6 +105,37 @@ public:
 		GameState->UpdatePlayerControllerWithCharacterOnServer(PlayerController, CurrentCharacter);
 	}
 
+	/*
+	
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
+		static FPlayerSetupStaticData GetCurrentRoleData(int RoleID, UObject* WorldContextObj)
+	{
+		FPlayerSetupStaticData RoleEntry;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return RoleEntry;
+
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		TArray<FPlayerCharacterRelationEntry> PlayerRelationMapping = GameState->GetCharatersRelationMapping();
+
+		if (PlayerRelationMapping.Num() <= 0)
+			return RoleEntry;
+
+		TArray<FPlayerSetupStaticData> PlayerStaticSetupData = GetPlayerStaticSetupData(World);
+
+
+		RoleID = FMath::Clamp(RoleID, 0, PlayerStaticSetupData.Num() - 1);
+
+
+		RoleEntry = PlayerStaticSetupData[RoleID];
+
+		return RoleEntry;
+	}
 
 
 	/**
@@ -148,4 +179,7 @@ public:
 
 		GameState->ChangeGameState(State);
 	}
+
+
+
 };

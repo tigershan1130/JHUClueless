@@ -56,6 +56,13 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation, Category = "ChatSystem|ServerSendMessage")
 		void ServerSendChatMessage(FSingleChatMessage ChatMessage);
 
+
+	UFUNCTION(BlueprintCallable, Category = "ChatSystem")
+		int GetChatIndex()
+	{
+		return Index;
+	}
+
 #pragma endregion
 
 
