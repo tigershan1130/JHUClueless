@@ -22,6 +22,8 @@ AClueCharacter::AClueCharacter()
 void AClueCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	SetReplicates(true);
 }
 
 // Check Server RPC set Game Start Implementation
@@ -29,6 +31,9 @@ void AClueCharacter::ServerRPCSetGameStart_Implementation()
 {
 	// send mssage to server, here this message is already on server
 	UGameplayAPI::ChangeClueGameState(ClueGameState::Gaming, (UObject*)this);
+
+	//if (GEngine)
+	//	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Server RPC set game start!"));
 }
 
 

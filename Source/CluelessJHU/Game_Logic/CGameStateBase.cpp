@@ -215,7 +215,6 @@ void ACGameStateBase::OnRep_PlayerCharacterMappingChanged()
 */
 void ACGameStateBase::OnRep_GameStateChanged()
 {
-
 	// game state has changed, we notify all the clue character players
 	for (auto& Entry : PlayerRelationMapping.PlayerRelationMapping)
 	{
@@ -264,7 +263,7 @@ TArray<ACharacter*> ACGameStateBase::GetActivePlayerCharacters()
 */
 void ACGameStateBase::ChangeGameState(ClueGameState CurrentGameState)
 {
-	if (GIsServer)
+	if (GIsServer || GetNetMode() == ENetMode::NM_ListenServer)
 	{
 		// if we are switching from pregaming state to start gaming start
 		// THIS IS VERY IMPORTANT FUNCTION, it is invoked when client starts the game.
