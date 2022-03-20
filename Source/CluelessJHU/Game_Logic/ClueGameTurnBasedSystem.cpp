@@ -27,5 +27,10 @@ void UClueGameTurnBasedSystem::OnGameInit()
 {
 	UE_LOG(LogTemp, Warning, TEXT("[ClueGameTurnBasedSystem] Game Initialized"));
 
+	// Spawn Cards
+
+	// Spawn Player Character
+
 
 }
+

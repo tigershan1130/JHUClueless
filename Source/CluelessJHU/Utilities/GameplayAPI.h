@@ -88,7 +88,7 @@ public:
 	* Update player character into Mapping.
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
-	static 	void UpdatePlayerControllerWithCharacter(ACharacter* CurrentCharacter, APlayerController* PlayerController, UObject* WorldContextObj)
+	static 	void UpdatePlayerControllerWithCharacter_Server(ACharacter* CurrentCharacter, APlayerController* PlayerController, UObject* WorldContextObj)
 	{
 		TArray<FPlayerSetupStaticData> PlayerStaticSetupData;
 
@@ -165,7 +165,7 @@ public:
 	// This will change the game state of the current game.
 	// should be called on server
 	UFUNCTION(BlueprintCallable, Category = "Gamplay  API", meta = (WorldContext = "WorldContextObj"))
-		static void ChangeClueGameState(ClueGameState State, UObject* WorldContextObj)
+		static void ChangeClueGameState_Server(ClueGameState State, UObject* WorldContextObj)
 	{
 		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
 

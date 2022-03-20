@@ -42,7 +42,7 @@ public:
 		void OnPlayerCharacterInitalized();
 
 	/**
-	 * @brief Onplayer Joined Game With CharacterRelation
+	 * @brief Onplayer Joined Game With CharacterRelation 
 	*/
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
 		void OnPlayerCharacterJoinBinded();

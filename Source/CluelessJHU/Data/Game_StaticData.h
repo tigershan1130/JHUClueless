@@ -65,7 +65,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int RelationID;
 
-
 	// card name if needed.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FText CardName;

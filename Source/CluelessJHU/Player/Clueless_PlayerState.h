@@ -80,4 +80,7 @@ protected:
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_ChangedPawn)
 		APawn* CurrentControlledPawn;
 
+
+	
+
 };
