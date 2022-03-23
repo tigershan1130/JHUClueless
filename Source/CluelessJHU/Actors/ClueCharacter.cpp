@@ -36,6 +36,24 @@ void AClueCharacter::ServerRPCSetGameStart_Implementation()
 	//	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Server RPC set game start!"));
 }
 
+void AClueCharacter::ServerRPCMakeMovement_Implementation(int BlockID)
+{
+	// this is server side Clue Character call
+
+}
+
+void AClueCharacter::ServerRPCMakeSuggestion_Implementation(int CWeaponID, int CRoleID, int CRoomID)
+{
+	// this is server side Clue Character call
+
+}
+
+
+void AClueCharacter::ServerRPCMakeAccusation_Implementation(int CWeaponID, int CRoleID, int CRoomID)
+{
+	// this is server side Clue Character call
+
+}
 
 // check if client is ready
 void AClueCharacter::ClientCheckPlayerReady()

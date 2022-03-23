@@ -31,7 +31,6 @@ void AClueless_PlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 void AClueless_PlayerState::ChangeGameState(int State)
 {
 	CurrentPlayerState = State;
-
 }
 
 void AClueless_PlayerState::OnRep_RoleID()
