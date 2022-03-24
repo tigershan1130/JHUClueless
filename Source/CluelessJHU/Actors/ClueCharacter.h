@@ -90,6 +90,12 @@ public:
 		void ServerRPCMakeAccusation(int CWeaponID, int CRoleID, int CRoomID);
 	void ServerRPCMakeAccusation_Implementation(int CWeaponID, int CRoleID, int CRoomID);
 
+	// ======================= UNIT TESTS(DRIVERS) ============================
+	UFUNCTION(Exec)
+		void TestMakeAccusation(int Arg1, int Arg2, int Arg3)
+	{
+		ServerRPCMakeAccusation(Arg1, Arg2, Arg3);
+	}
 
 private:
 	// this is private function called in tick to check if the player is ready.
