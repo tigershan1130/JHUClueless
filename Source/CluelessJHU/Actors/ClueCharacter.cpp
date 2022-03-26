@@ -39,20 +39,26 @@ void AClueCharacter::ServerRPCSetGameStart_Implementation()
 void AClueCharacter::ServerRPCMakeMovement_Implementation(int BlockID)
 {
 	// this is server side Clue Character call
-
+	UGameplayAPI::MakeMovement_Server((UObject*)this);
 }
 
 void AClueCharacter::ServerRPCMakeSuggestion_Implementation(int CWeaponID, int CRoleID, int CRoomID)
 {
 	// this is server side Clue Character call
-
+	UGameplayAPI::MakeSuggestion_Server((UObject*)this);
 }
 
 
 void AClueCharacter::ServerRPCMakeAccusation_Implementation(int CWeaponID, int CRoleID, int CRoomID)
 {
 	// this is server side Clue Character call
+	UGameplayAPI::MakeAccusation_Server((UObject*)this);
+}
 
+void AClueCharacter::ServerRPCEndTurn_Implementation()
+{
+	// this is server side clue character call
+	UGameplayAPI::EndPlayerTurn_Server((UObject*)this);
 }
 
 // check if client is ready

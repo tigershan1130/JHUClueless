@@ -14,6 +14,12 @@ UClueGameTurnBasedSystem::UClueGameTurnBasedSystem()
 }
 
 
+void UClueGameTurnBasedSystem::OnPlayerEndTurn()
+{
+	print("[Server: CluelessGameLogic] TODO: End Current Players Turn->Move Turn To Next Player");
+
+}
+
 // Called when the game starts
 void UClueGameTurnBasedSystem::BeginPlay()
 {
@@ -25,12 +31,32 @@ void UClueGameTurnBasedSystem::BeginPlay()
 
 void UClueGameTurnBasedSystem::OnGameInit()
 {
-	UE_LOG(LogTemp, Warning, TEXT("[ClueGameTurnBasedSystem] Game Initialized"));
+	print("[Server: CluelessGameLogic] TODO: Generate Cards->Spawn Characters->InitiatePlayerTurn");
+	
 
 	// Spawn Cards
 
 	// Spawn Player Character
 
+
+}
+
+void UClueGameTurnBasedSystem::OnPlayerMakeAccusation()
+{
+	print("[Server: CluelessGameLogic] TODO: Check Accusation Cards->Player Status Adjustment");
+
+	
+}
+
+void UClueGameTurnBasedSystem::OnPlayerMakeMovement()
+{
+	print("[Server: CluelessGameLogic] TODO: Validate Player Movement->Make Player Movement");
+
+}
+
+void UClueGameTurnBasedSystem::OnPlayerMakeSuggestion()
+{
+	print("[Server: CluelessGameLogic] TODO: check Player Suggestion");
 
 }
 

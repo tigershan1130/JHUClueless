@@ -90,12 +90,40 @@ public:
 		void ServerRPCMakeAccusation(int CWeaponID, int CRoleID, int CRoomID);
 	void ServerRPCMakeAccusation_Implementation(int CWeaponID, int CRoleID, int CRoomID);
 
+	/*
+	* @brief Driver: client send message to server to end his/her current turn.
+	*/
+	UFUNCTION(BlueprintCallable, Reliable, Server)
+		void ServerRPCEndTurn();
+	void ServerRPCEndTurn_Implementation();
+
+
 	// ======================= UNIT TESTS(DRIVERS) ============================
 	UFUNCTION(Exec)
-		void TestMakeAccusation(int Arg1, int Arg2, int Arg3)
+		void FunctiontestMakeAccusation(int WeaponID, int RoleID, int RoomID)
 	{
-		ServerRPCMakeAccusation(Arg1, Arg2, Arg3);
+		ServerRPCMakeAccusation(WeaponID, RoleID, RoomID);
 	}
+
+	UFUNCTION(Exec)
+		void FunctionTestMakeSuggestion(int WeaponID, int RoleID, int RoomID)
+	{
+		ServerRPCMakeSuggestion(WeaponID, RoleID, RoomID);
+	}
+
+	UFUNCTION(Exec)
+		void FunctionTestMakeMovement(int BlockID)
+	{
+		ServerRPCMakeMovement(BlockID);
+	}
+
+	UFUNCTION(Exec)
+		void FunctionTestEndTurn()
+	{
+		ServerRPCEndTurn();
+	}
+
+
 
 private:
 	// this is private function called in tick to check if the player is ready.

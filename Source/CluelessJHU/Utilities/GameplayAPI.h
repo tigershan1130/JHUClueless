@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "CluelessJHU/Data/Game_StaticData.h"
+#include "CluelessJHU/Game_Logic/ClueGameTurnBasedSystem.h"
 #include "Math/UnrealMathUtility.h"
 #include "CluelessJHU/Game_Logic/CGameStateBase.h"
 #include "GameplayAPI.generated.h"
@@ -18,95 +19,10 @@ class CLUELESSJHU_API UGameplayAPI : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
-	
-	/**
-	 * @brief 
-	*/
-	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
-	static TArray<FPlayerSetupStaticData> GetPlayerStaticSetupData(UObject* WorldContextObj)
-	{
-		TArray<FPlayerSetupStaticData> PlayerStaticSetupData;
 
-		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
-
-		if (!World)
-			return PlayerStaticSetupData;
-
-		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
-
-		if (GameState != nullptr)		
-			PlayerStaticSetupData = GameState->GetPlayerSetupStaticData();
-		
-		return PlayerStaticSetupData;
-	}
-
-
-	/**
-	* @brief 
-	*/
-	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
-	static TArray<FPlayerRelationMappingEntry> GetCurrentData(ACharacter* CurrentCharacter, UObject* WorldContextObj)
-	{
-		TArray<FPlayerRelationMappingEntry> DynamicRelationMapping;
-
-		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
-
-		if (!World)
-			return DynamicRelationMapping;
-
-
-		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
-
-		if (GameState == nullptr)
-			return DynamicRelationMapping;
-
-		TArray<FPlayerCharacterRelationEntry> PlayerRelationMapping = GameState->GetCharatersRelationMapping();
-
-		if (PlayerRelationMapping.Num() <= 0)
-			return DynamicRelationMapping;
-
-		TArray<FPlayerSetupStaticData> PlayerStaticSetupData = GetPlayerStaticSetupData(World);
-
-		for (int i = 0; i < PlayerRelationMapping.Num(); i++)
-		{
-			FPlayerRelationMappingEntry PlayerRelationEntry;
-
-			int index = PlayerRelationMapping[i].Index;
-			index = FMath::Clamp(index, 0, PlayerStaticSetupData.Num()-1);
-
-			PlayerRelationEntry.PlayerStaticData = PlayerStaticSetupData[index];
-			PlayerRelationEntry.IsYou = (CurrentCharacter == PlayerRelationMapping[i].Character);
-
-			DynamicRelationMapping.Add(PlayerRelationEntry);
-		}
-
-		return DynamicRelationMapping;
-	}
-
-
-	/**
-	* Update player character into Mapping.
-	*/
-	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
-	static 	void UpdatePlayerControllerWithCharacter_Server(ACharacter* CurrentCharacter, APlayerController* PlayerController, UObject* WorldContextObj)
-	{
-		TArray<FPlayerSetupStaticData> PlayerStaticSetupData;
-
-		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
-
-		if (!World)
-			return;
-
-		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
-
-		if (GameState == nullptr)
-			return;
-
-		GameState->UpdatePlayerControllerWithCharacterOnServer(PlayerController, CurrentCharacter);
-	}
-
+#pragma region Server and Client calls
 	/*
-	
+	Get current role data for both client and server
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
 		static FPlayerSetupStaticData GetCurrentRoleData(int RoleID, UObject* WorldContextObj)
@@ -158,8 +74,98 @@ public:
 
 		return GameState->GetGameState();
 
-		
+
 	}
+	
+	/**
+	 * @brief for both client and server
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
+	static TArray<FPlayerSetupStaticData> GetPlayerStaticSetupData(UObject* WorldContextObj)
+	{
+		TArray<FPlayerSetupStaticData> PlayerStaticSetupData;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return PlayerStaticSetupData;
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState != nullptr)		
+			PlayerStaticSetupData = GameState->GetPlayerSetupStaticData();
+		
+		return PlayerStaticSetupData;
+	}
+
+
+	/**
+	* @brief For both client and server
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
+	static TArray<FPlayerRelationMappingEntry> GetCurrentData(ACharacter* CurrentCharacter, UObject* WorldContextObj)
+	{
+		TArray<FPlayerRelationMappingEntry> DynamicRelationMapping;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return DynamicRelationMapping;
+
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return DynamicRelationMapping;
+
+		TArray<FPlayerCharacterRelationEntry> PlayerRelationMapping = GameState->GetCharatersRelationMapping();
+
+		if (PlayerRelationMapping.Num() <= 0)
+			return DynamicRelationMapping;
+
+		TArray<FPlayerSetupStaticData> PlayerStaticSetupData = GetPlayerStaticSetupData(World);
+
+		for (int i = 0; i < PlayerRelationMapping.Num(); i++)
+		{
+			FPlayerRelationMappingEntry PlayerRelationEntry;
+
+			int index = PlayerRelationMapping[i].Index;
+			index = FMath::Clamp(index, 0, PlayerStaticSetupData.Num()-1);
+
+			PlayerRelationEntry.PlayerStaticData = PlayerStaticSetupData[index];
+			PlayerRelationEntry.IsYou = (CurrentCharacter == PlayerRelationMapping[i].Character);
+
+			DynamicRelationMapping.Add(PlayerRelationEntry);
+		}
+
+		return DynamicRelationMapping;
+	}
+
+#pragma endregion Server and Client calls
+
+
+#pragma region Server Calls
+	/**
+	* Update player character into Mapping.
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
+	static 	void UpdatePlayerControllerWithCharacter_Server(ACharacter* CurrentCharacter, APlayerController* PlayerController, UObject* WorldContextObj)
+	{
+		TArray<FPlayerSetupStaticData> PlayerStaticSetupData;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return;
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return;
+
+		GameState->UpdatePlayerControllerWithCharacterOnServer(PlayerController, CurrentCharacter);
+	}
+
 
 
 	// This will change the game state of the current game.
@@ -180,6 +186,110 @@ public:
 		GameState->ChangeGameState(State);
 	}
 
+	UFUNCTION(Blueprintcallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
+		static void MakeAccusation_Server(UObject* WorldContextObj)
+	{
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
 
+		if (World == nullptr)
+			return;
+
+		AGameModeBase* GM = World->GetAuthGameMode<AGameModeBase>();
+
+		if (!GM) {
+			UE_LOG(LogTemp, Warning, TEXT("GM from Client is not Valid"));
+		}
+		else
+		{
+			UClueGameTurnBasedSystem* TurnBasedGameModeComp = (UClueGameTurnBasedSystem*)GM->GetComponentByClass(UClueGameTurnBasedSystem::StaticClass());
+
+			if (TurnBasedGameModeComp)
+			{
+				TurnBasedGameModeComp->OnPlayerMakeAccusation();
+			}
+		}
+
+	}
+
+
+	UFUNCTION(BlueprintCallable, Category = "Gamplay API", meta = (WorldContext = "WorldContextObj"))
+		static void MakeMovement_Server(UObject* WorldContextObj)
+	{
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (World == nullptr)
+			return;
+
+		AGameModeBase* GM = World->GetAuthGameMode<AGameModeBase>();
+
+		if (!GM) {
+			UE_LOG(LogTemp, Warning, TEXT("GM from Client is not Valid"));
+		}
+		else
+		{
+			UClueGameTurnBasedSystem* TurnBasedGameModeComp = (UClueGameTurnBasedSystem*)GM->GetComponentByClass(UClueGameTurnBasedSystem::StaticClass());
+
+			if (TurnBasedGameModeComp)
+			{
+				TurnBasedGameModeComp->OnPlayerMakeMovement();
+			}
+		}
+
+	}
+
+
+
+	UFUNCTION(BlueprintCallable, Category = "Gamplay API", meta = (WorldContext = "WorldContextObj"))
+		static void MakeSuggestion_Server(UObject* WorldContextObj)
+	{
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (World == nullptr)
+			return;
+
+		AGameModeBase* GM = World->GetAuthGameMode<AGameModeBase>();
+
+		if (!GM) {
+			UE_LOG(LogTemp, Warning, TEXT("GM from Client is not Valid"));
+		}
+		else
+		{
+			UClueGameTurnBasedSystem* TurnBasedGameModeComp = (UClueGameTurnBasedSystem*)GM->GetComponentByClass(UClueGameTurnBasedSystem::StaticClass());
+
+			if (TurnBasedGameModeComp)
+			{
+				TurnBasedGameModeComp->OnPlayerMakeSuggestion();
+			}
+		}
+
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "Gamplay API", meta = (WorldContext = "WorldContextObj"))
+		static void EndPlayerTurn_Server(UObject* WorldContextObj)
+	{
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (World == nullptr)
+			return;
+
+		AGameModeBase* GM = World->GetAuthGameMode<AGameModeBase>();
+
+		if (!GM) {
+			UE_LOG(LogTemp, Warning, TEXT("GM from Client is not Valid"));
+		}
+		else
+		{
+			UClueGameTurnBasedSystem* TurnBasedGameModeComp = (UClueGameTurnBasedSystem*)GM->GetComponentByClass(UClueGameTurnBasedSystem::StaticClass());
+
+			if (TurnBasedGameModeComp)
+			{
+				TurnBasedGameModeComp->OnPlayerEndTurn();
+			}
+		}
+
+	}
+
+
+#pragma endregion Server Calls
 
 };

@@ -7,6 +7,8 @@
 #include "CGameStateBase.h"
 #include "ClueGameTurnBasedSystem.generated.h"
 
+#define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red,text)
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CLUELESSJHU_API UClueGameTurnBasedSystem : public UActorComponent
@@ -23,6 +25,21 @@ public:
 	UFUNCTION()
 		void OnGameInit();
 
+	// This function will make player make an accusation
+	UFUNCTION()
+		void OnPlayerMakeAccusation();
+
+	// this function will make player to make a movement
+	UFUNCTION()
+		void OnPlayerMakeMovement();
+
+	// This function will make player to make a suggestion
+	UFUNCTION()
+		void OnPlayerMakeSuggestion();
+
+	// this function will make player end turn
+	UFUNCTION()
+		void OnPlayerEndTurn();
 
 
 
