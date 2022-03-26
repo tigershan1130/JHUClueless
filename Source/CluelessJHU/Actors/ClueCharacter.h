@@ -100,7 +100,7 @@ public:
 
 	// ======================= UNIT TESTS(DRIVERS) ============================
 	UFUNCTION(Exec)
-		void FunctiontestMakeAccusation(int WeaponID, int RoleID, int RoomID)
+		void FunctionTestMakeAccusation(int WeaponID, int RoleID, int RoomID)
 	{
 		ServerRPCMakeAccusation(WeaponID, RoleID, RoomID);
 	}
@@ -123,6 +123,11 @@ public:
 		ServerRPCEndTurn();
 	}
 
+	UFUNCTION(Exec)
+		void FunctionTestInitGame()
+	{
+		ServerRPCSetGameStart();
+	}
 
 
 private:
