@@ -33,8 +33,8 @@ void UClueGameTurnBasedSystem::OnGameInit()
 {
 	print("[Server: CluelessGameLogic] TODO: Generate Cards->Spawn Characters->InitiatePlayerTurn");
 	
-
 	// Spawn Cards
+
 
 	// Spawn Player Character
 

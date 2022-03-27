@@ -162,9 +162,21 @@ protected:
 
 	
 	/**
-	 * @brief The murder deck.
+	 * @brief The murder deck.TODO: Add to replication
 	*/
 	UPROPERTY(Replicated)
 		TArray<FCardEntityData> MurderDeck;
+
+	/*
+	* @brief Extra deck  TODO: Add to replication
+	*/
+	UPROPERTY(Replicated)
+		TArray<FCardEntityData> ExtraDeck;
+
+	/*
+	* @brief This contains PlayerState to Deck Relation TODO: Add to replication
+	*/
+	UPROPERTY(Replicated)
+		TArray<AClueless_PlayerState*> PlayerDecks;
 
 }; 
