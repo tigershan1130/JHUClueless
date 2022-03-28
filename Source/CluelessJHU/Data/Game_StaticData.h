@@ -63,7 +63,7 @@ public:
 
 	// so if 0 for character, we can then use RelationID to go to character table to find more data.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int RelationID;
+		FName RelationID;
 
 	// card name if needed.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

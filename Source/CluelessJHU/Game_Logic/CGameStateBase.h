@@ -104,7 +104,14 @@ public:
 	 * @brief Get Current active players
 	*/
 	UFUNCTION()
-	TArray<ACharacter*> GetActivePlayerCharacters();
+	TArray<ACharacter*> GetActivePlayerCharacters_Server();
+
+	UFUNCTION()
+	TArray<APlayerController*> GetActiveController_Server();
+
+
+	UFUNCTION()
+	TArray<FCardEntityData> GetCardsSetupData();
 
 	// Get game state called from GameAPI
 	UFUNCTION()
@@ -126,6 +133,10 @@ protected:
 	*/
 	UPROPERTY()
 		TArray<FPlayerSetupStaticData> PlayerSetupStaticData;
+
+	/* Clue Cards Setup Data*/
+	UPROPERTY()
+		TArray<FCardEntityData> ClueCardsSetupData;
 
 	/**
 	 * @brief  This holds registered
@@ -177,6 +188,6 @@ protected:
 	* @brief This contains PlayerState to Deck Relation TODO: Add to replication
 	*/
 	UPROPERTY(Replicated)
-		TArray<AClueless_PlayerState*> PlayerDecks;
+		TArray<AClueless_PlayerState*> DistributedCardsPlayers;
 
 }; 

@@ -26,6 +26,8 @@ void ACGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(ACGameStateBase, MurderDeck);
 	DOREPLIFETIME(ACGameStateBase, PlayerRelationMapping);
 	DOREPLIFETIME(ACGameStateBase, CGameState);
+	DOREPLIFETIME(ACGameStateBase, ExtraDeck);
+	DOREPLIFETIME(ACGameStateBase, DistributedCardsPlayers);
 }
 
 void ACGameStateBase::PreInitializeComponents()
@@ -154,7 +156,7 @@ void ACGameStateBase::UpdatePlayerControllerWithCharacterOnServer(APlayerControl
 	}
 
 	// get active characters
-	TArray<ACharacter*> ActiveCharacters = GetActivePlayerCharacters();
+	TArray<ACharacter*> ActiveCharacters = GetActivePlayerCharacters_Server();
 
 	// if current active characters is bigger than or equal to 3, we can start our game if I am the host
 	if (ActiveCharacters.Num() >= 3)
@@ -242,7 +244,7 @@ void ACGameStateBase::OnRep_TurnChanged()
 /*
 * Get current characters roles that's already been possessed.
 */
-TArray<ACharacter*> ACGameStateBase::GetActivePlayerCharacters()
+TArray<ACharacter*> ACGameStateBase::GetActivePlayerCharacters_Server()
 {
 	TArray<ACharacter*> ActiveCharacters;
 
@@ -254,6 +256,49 @@ TArray<ACharacter*> ACGameStateBase::GetActivePlayerCharacters()
 	}
 
 	return ActiveCharacters;
+}
+
+
+TArray<APlayerController*> ACGameStateBase::GetActiveController_Server()
+{
+
+	TArray<APlayerController*> ActiveControllers;
+
+	for (auto& Entry : ServerMapPlayerCharacters)
+	{
+		if (Entry.Value != nullptr)
+			ActiveControllers.Add(Entry.Key);
+
+	}
+
+	return ActiveControllers;
+}
+
+// Get Cards Inited 21 cards total 6 + 6 + 9
+TArray<FCardEntityData> ACGameStateBase::GetCardsSetupData()
+{
+	if (ClueCardsSetupData.Num() <= 0)
+	{
+		// populate our data
+		UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(GetWorld());
+
+		UStaticDataSubSystem* StaticDataGameSystem = GameInstance->GetSubsystem<UStaticDataSubSystem>();
+
+		StaticDataGameSystem->InitStaticData();
+
+		UDataTable* CardsSetupStaticData = UStaticDataSubSystem::GetDataTableByName(TEXT("CardsSetup"));
+
+		FString _Context;
+
+		for (auto& RowName : CardsSetupStaticData->GetRowNames())
+		{
+			FCardEntityData* RowData = CardsSetupStaticData->FindRow<FCardEntityData>(RowName, _Context);
+			ClueCardsSetupData.Add(*RowData);
+		}
+
+	}
+
+	return ClueCardsSetupData;
 }
 
 

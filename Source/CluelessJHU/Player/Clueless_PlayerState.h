@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
+#include "CluelessJHU/Data/Game_StaticData.h"
 #include "Clueless_PlayerState.generated.h"
 
 
@@ -37,6 +38,13 @@ public:
 
 	UFUNCTION()
 		virtual void OnRep_ChangedPawn();
+
+	UFUNCTION()
+		virtual void OnRep_CardsDistributed();
+
+	UFUNCTION()
+		void SetCardsInHand(TArray<FCardEntityData> CardsForThisPlayer);
+
 
 	UFUNCTION(BlueprintCallable)
 		int GetCurrentGameState()
@@ -81,6 +89,10 @@ protected:
 		APawn* CurrentControlledPawn;
 
 
-	
+	/*
+	* @brief this holds all cards current player have
+	*/
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_CardsDistributed)
+		TArray<FCardEntityData> HandCards;
 
 };

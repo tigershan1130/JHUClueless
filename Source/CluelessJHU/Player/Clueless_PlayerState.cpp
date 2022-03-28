@@ -24,7 +24,7 @@ void AClueless_PlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 
 	DOREPLIFETIME(AClueless_PlayerState, CurrentPlayerState);
 	DOREPLIFETIME(AClueless_PlayerState, RoleID);
-
+	DOREPLIFETIME(AClueless_PlayerState, HandCards);
 
 }
 
@@ -48,4 +48,13 @@ void AClueless_PlayerState::OnRep_GameActionChanged()
 void AClueless_PlayerState::OnRep_ChangedPawn()
 {
 
+}
+
+void AClueless_PlayerState::OnRep_CardsDistributed()
+{
+}
+
+void AClueless_PlayerState::SetCardsInHand(TArray<FCardEntityData> CardsForThisPlayer)
+{
+	HandCards = CardsForThisPlayer; // This will then replicate to all clients.
 }

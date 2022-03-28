@@ -7,7 +7,7 @@
 #include "CGameStateBase.h"
 #include "ClueGameTurnBasedSystem.generated.h"
 
-#define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red,text)
+#define print(text, color) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, color,text)
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
