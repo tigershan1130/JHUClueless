@@ -72,6 +72,12 @@ public:
 	UFUNCTION()
 		virtual void OnRep_GameStartedChanged();
 
+	/*
+	* @brief Check Cards Changed
+	*/
+	UFUNCTION()
+		virtual void OnRep_OnExtraCardsChanged();
+
 	/**
 	 * @brief Player character mapping changed to update our pre-game UI
 	*/
@@ -113,6 +119,19 @@ public:
 	UFUNCTION()
 	TArray<FCardEntityData> GetCardsSetupData();
 
+	UFUNCTION()
+		TArray<FCardEntityData> GetLeftoverCards()
+	{
+		return LeftoverDeck;
+	}
+
+	UFUNCTION()
+		void SetupCards(TArray<FCardEntityData> MurderCards, TArray<FCardEntityData> LeftoverCards)
+	{
+		MurderDeck = MurderCards;
+		LeftoverDeck = LeftoverCards;
+	}
+
 	// Get game state called from GameAPI
 	UFUNCTION()
 	ClueGameState GetGameState()
@@ -144,7 +163,6 @@ protected:
 	UPROPERTY()
 		TMap<APlayerController*, ACharacter*> ServerMapPlayerCharacters;
 
-
 	/**
 	 * @brief This use to set if our game is ready to start, if it is
 	 * on Host Client will show StartGame button, this is used with listen server option.
@@ -173,16 +191,16 @@ protected:
 
 	
 	/**
-	 * @brief The murder deck.TODO: Add to replication
+	 * @brief The murder deck.
 	*/
-	UPROPERTY(Replicated)
+	UPROPERTY()
 		TArray<FCardEntityData> MurderDeck;
 
 	/*
-	* @brief Extra deck  TODO: Add to replication
+	* @brief Extra deck
 	*/
-	UPROPERTY(Replicated)
-		TArray<FCardEntityData> ExtraDeck;
+	UPROPERTY(Replicated = OnRep_OnExtraCardsChanged)
+		TArray<FCardEntityData> LeftoverDeck;
 
 	/*
 	* @brief This contains PlayerState to Deck Relation TODO: Add to replication

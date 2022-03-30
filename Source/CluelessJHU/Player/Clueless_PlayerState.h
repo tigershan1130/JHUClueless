@@ -31,6 +31,12 @@ public:
 		void ChangeGameState(int State);
 
 	UFUNCTION()
+		void SetControlledPawn(APawn* Pawn)
+	{
+		CurrentControlledPawn = Pawn;
+	}
+
+	UFUNCTION()
 		virtual void OnRep_RoleID();
 
 	UFUNCTION()
@@ -45,6 +51,11 @@ public:
 	UFUNCTION()
 		void SetCardsInHand(TArray<FCardEntityData> CardsForThisPlayer);
 
+	UFUNCTION()
+		TArray<FCardEntityData> GetCardsInHand()
+	{
+		return HandCards;
+	}
 
 	UFUNCTION(BlueprintCallable)
 		int GetCurrentGameState()

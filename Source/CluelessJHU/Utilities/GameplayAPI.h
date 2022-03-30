@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "CluelessJHU/Data/Game_StaticData.h"
+#include "GameFramework/Character.h"
+#include "CluelessJHU/Player/Clueless_PlayerState.h"
 #include "CluelessJHU/Game_Logic/ClueGameTurnBasedSystem.h"
 #include "Math/UnrealMathUtility.h"
 #include "CluelessJHU/Game_Logic/CGameStateBase.h"
@@ -98,6 +100,50 @@ public:
 		return PlayerStaticSetupData;
 	}
 
+
+	/**
+	* @brief For both client and server
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
+		static TArray<FCardEntityData> GetCurrentPlayerCards(ACharacter* CurrentCharacter, UObject* WorldContextObj)
+	{
+		TArray<FCardEntityData> ActivePlayerCards;
+
+		if (CurrentCharacter->IsLocallyControlled())
+		{
+			ActivePlayerCards = ((AClueless_PlayerState*)CurrentCharacter->GetPlayerState())->GetCardsInHand();
+
+			//for (int i = 0; i < ActivePlayerCards.Num(); i++)
+			//{
+			//	UE_LOG(LogTemp, Warning, TEXT("Cards %d:  %s"), i, *(ActivePlayerCards[i].CardName.ToString()));
+			//}
+		}
+
+		return ActivePlayerCards;
+	}
+
+
+	/*
+	* @brief for both client and server
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
+		static TArray<FCardEntityData> GetLeftOverCards(UObject* WorldContextObj)
+	{
+		TArray<FCardEntityData> ActivePlayerCards;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return ActivePlayerCards;
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return ActivePlayerCards;
+
+
+		return GameState->GetLeftoverCards(); 
+	}
 
 	/**
 	* @brief For both client and server

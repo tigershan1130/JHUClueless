@@ -23,10 +23,9 @@ void ACGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(ACGameStateBase, HostReadyToStartGame, COND_OwnerOnly);
-	DOREPLIFETIME(ACGameStateBase, MurderDeck);
 	DOREPLIFETIME(ACGameStateBase, PlayerRelationMapping);
 	DOREPLIFETIME(ACGameStateBase, CGameState);
-	DOREPLIFETIME(ACGameStateBase, ExtraDeck);
+	DOREPLIFETIME(ACGameStateBase, LeftoverDeck);
 	DOREPLIFETIME(ACGameStateBase, DistributedCardsPlayers);
 }
 
@@ -141,6 +140,7 @@ void ACGameStateBase::UpdatePlayerControllerWithCharacterOnServer(APlayerControl
 				if (PlayerController->GetPlayerState<AClueless_PlayerState>())
 				{
 					PlayerController->GetPlayerState<AClueless_PlayerState>()->SetRoleID(CharacterRelationEntry.Index);
+					PlayerController->GetPlayerState<AClueless_PlayerState>()->SetControlledPawn(Character);
 				}
 
 				PlayerRelationMapping.PlayerRelationMapping.Add(CharacterRelationEntry);
@@ -188,6 +188,23 @@ void ACGameStateBase::OnRep_GameStartedChanged()
 				if (ClueCharacter->IsLocallyControlled())
 					ClueCharacter->OnHostReadyStartGame();
 			}
+		}
+	}
+}
+
+/*
+* @brief When Game cards changed.
+*/
+void ACGameStateBase::OnRep_OnExtraCardsChanged()
+{
+	for (auto& Entry : PlayerRelationMapping.PlayerRelationMapping)
+	{
+		AClueCharacter* ClueCharacter = (AClueCharacter*)Entry.Character;
+
+		if (ClueCharacter != nullptr)
+		{
+			if (ClueCharacter->IsLocallyControlled())
+				ClueCharacter->OnPlayerCharacterJoinBinded();
 		}
 	}
 }

@@ -2,6 +2,7 @@
 
 
 #include "ClueGameTurnBasedSystem.h"
+#include "Kismet/KismetArrayLibrary.h"
 #include "CluelessJHU/Player/Clueless_PlayerState.h"
 #include "CluelessJHU/Data/Game_StaticData.h"
 
@@ -52,6 +53,11 @@ void UClueGameTurnBasedSystem::OnGameInit()
 	TArray<APlayerController*> ActiveCharacterControls = GameState->GetActiveController_Server();
 	TArray<AClueless_PlayerState*> ActivePlayerStates;
 
+	// Data 
+	TArray<FCardEntityData> MurderDeck;
+	TMap<int, TArray<FCardEntityData>> PlayerHands;
+	TArray<FCardEntityData> ExtraCards;
+
 	// Populate our current active player states for distributing cards to players
 	for (auto& Entry : ActiveCharacterControls)
 	{
@@ -71,15 +77,69 @@ void UClueGameTurnBasedSystem::OnGameInit()
 	int NumberOfPlayers = ActivePlayerStates.Num();
 
 	// 1. Murder Deck
+	int MurderWeaponIndex = FMath::RandRange(0, WeaponCards.Num()-1);
+	int MurderCharIndex = FMath::RandRange(0, CharacterCards.Num()-1);
+	int MurderRoomIndex = FMath::RandRange(0, RoomCards.Num()-1);
+
+
+	// Remove Murder Cards from initial stack.
+	WeaponCards.RemoveAt(MurderWeaponIndex);
+	CharacterCards.RemoveAt(MurderCharIndex);
+	RoomCards.RemoveAt(MurderRoomIndex);
 
 	// 2. Player Cards
+	// Distributing of player cards would not be necessary for Player Cards
+	TArray<FCardEntityData> ShuffleCards;
+	ShuffleCards.Append(WeaponCards);
+	ShuffleCards.Append(CharacterCards);
+	ShuffleCards.Append(RoomCards);
+
+	int TotalCardsNum = ShuffleCards.Num();
+	int PlayerStartingCardsNum = TotalCardsNum / NumberOfPlayers; // integer automatically rounds down.
+
+	// shuffle cards
+	for (int32 i = ShuffleCards.Num() - 1; i > 0; i--) {
+		int32 j = FMath::Floor(FMath::Rand() * (i + 1)) % ShuffleCards.Num();
+		FCardEntityData temp = ShuffleCards[i];
+		ShuffleCards[i] = ShuffleCards[j];
+		ShuffleCards[j] = temp;
+	}
+
+
+	// putting different cards into player's hands
+	for (int i = 0; i < NumberOfPlayers; i++)
+	{
+		PlayerHands.Add(i, TArray<FCardEntityData>());
+
+		for (int j = 0; j < PlayerStartingCardsNum; j++)
+		{
+			int CurrentIndex = i * (PlayerStartingCardsNum-1) + j;
+			PlayerHands[i].Add(ShuffleCards[CurrentIndex]);
+		}
+	}
 
 	// 3. Extra Cards
+	int RemainingCards = TotalCardsNum - PlayerStartingCardsNum * NumberOfPlayers;
 
+	if (RemainingCards > 0)
+	{
+		for (int i = PlayerStartingCardsNum * NumberOfPlayers; i < TotalCardsNum; i++)
+		{
+			ExtraCards.Add(ShuffleCards[i]);
+		}
+	}
 
+	// 4. Setup all Cards Data.
+	GameState->SetupCards(MurderDeck, ExtraCards);
+	 
+	for (int i = 0; i < ActivePlayerStates.Num(); i++)
+	{
+		if (PlayerHands.Contains(i))
+			ActivePlayerStates[i]->SetCardsInHand(PlayerHands[i]);
+	}
 
 	// Spawn Player Character
-
+	print("[Server: CluelessGameLogic] TODO: Set Player Character Spawn and Initialization", FColor::Green);
 
 }
 

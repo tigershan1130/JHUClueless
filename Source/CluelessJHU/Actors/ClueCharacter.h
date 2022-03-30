@@ -47,12 +47,21 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
 		void OnPlayerCharacterJoinBinded();
 
+	// On Extra cards updated.
+	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
+		void OnExtraCardsUpdated();
+
+	/* 
+	* @brief on player cards updated.
+	*/
+	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
+		void OnPlayerCardsUpdated();
+
 	/**
 	 * @brief this is for base player setup when game state has changed. Server->Client
 	*/
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
 		void OnGameStateChanged(ClueGameState State);
-
 
 	/**
 	 * @brief server->Client, Server notifies Client that host is able to start game. Only Host should able to have Start-Game Button enabled.
