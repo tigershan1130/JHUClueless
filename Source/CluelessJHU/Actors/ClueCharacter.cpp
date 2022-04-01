@@ -4,7 +4,7 @@
 #include "ClueCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "CluelessJHU/Utilities/GameplayAPI.h"
-#include "CluelessJHU/Player/Clueless_PlayerState.h"
+#include "CluelessJHU/Player_Logic/Clueless_PlayerState.h"
 #include "CluelessJHU/Game_Logic/CGameStateBase.h"
 
 // Sets default values

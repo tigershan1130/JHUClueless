@@ -6,8 +6,8 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "CluelessJHU/Data/Game_StaticData.h"
 #include "GameFramework/Character.h"
-#include "CluelessJHU/Player/Clueless_PlayerState.h"
-#include "CluelessJHU/Game_Logic/ClueGameTurnBasedSystem.h"
+#include "CluelessJHU/Player_Logic/Clueless_PlayerState.h"
+#include "CluelessJHU/Game_Logic/ClueGameTurnBasedComponent.h"
 #include "Math/UnrealMathUtility.h"
 #include "CluelessJHU/Game_Logic/CGameStateBase.h"
 #include "GameplayAPI.generated.h"
@@ -247,7 +247,7 @@ public:
 		}
 		else
 		{
-			UClueGameTurnBasedSystem* TurnBasedGameModeComp = (UClueGameTurnBasedSystem*)GM->GetComponentByClass(UClueGameTurnBasedSystem::StaticClass());
+			UClueGameTurnBasedComponent* TurnBasedGameModeComp = (UClueGameTurnBasedComponent*)GM->GetComponentByClass(UClueGameTurnBasedComponent::StaticClass());
 
 			if (TurnBasedGameModeComp)
 			{
@@ -273,7 +273,7 @@ public:
 		}
 		else
 		{
-			UClueGameTurnBasedSystem* TurnBasedGameModeComp = (UClueGameTurnBasedSystem*)GM->GetComponentByClass(UClueGameTurnBasedSystem::StaticClass());
+			UClueGameTurnBasedComponent* TurnBasedGameModeComp = (UClueGameTurnBasedComponent*)GM->GetComponentByClass(UClueGameTurnBasedComponent::StaticClass());
 
 			if (TurnBasedGameModeComp)
 			{
@@ -300,7 +300,7 @@ public:
 		}
 		else
 		{
-			UClueGameTurnBasedSystem* TurnBasedGameModeComp = (UClueGameTurnBasedSystem*)GM->GetComponentByClass(UClueGameTurnBasedSystem::StaticClass());
+			UClueGameTurnBasedComponent* TurnBasedGameModeComp = (UClueGameTurnBasedComponent*)GM->GetComponentByClass(UClueGameTurnBasedComponent::StaticClass());
 
 			if (TurnBasedGameModeComp)
 			{
@@ -325,7 +325,7 @@ public:
 		}
 		else
 		{
-			UClueGameTurnBasedSystem* TurnBasedGameModeComp = (UClueGameTurnBasedSystem*)GM->GetComponentByClass(UClueGameTurnBasedSystem::StaticClass());
+			UClueGameTurnBasedComponent* TurnBasedGameModeComp = (UClueGameTurnBasedComponent*)GM->GetComponentByClass(UClueGameTurnBasedComponent::StaticClass());
 
 			if (TurnBasedGameModeComp)
 			{

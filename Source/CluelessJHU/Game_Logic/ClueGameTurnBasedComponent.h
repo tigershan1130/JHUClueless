@@ -1,24 +1,28 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 // This Class is Server Control Logic ONLY
+// This class handles Accusation Check
+// This class handles Suggestion Check
+// This class handles Turn Check
+// This class handles Winning and Losing Conditions
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "CGameStateBase.h"
-#include "ClueGameTurnBasedSystem.generated.h"
+#include "ClueGameTurnBasedComponent.generated.h"
 
 #define print(text, color) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, color,text)
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class CLUELESSJHU_API UClueGameTurnBasedSystem : public UActorComponent
+class CLUELESSJHU_API UClueGameTurnBasedComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
 	// Sets default values for this component's properties
-	UClueGameTurnBasedSystem();
+	UClueGameTurnBasedComponent();
 
 #pragma region Server Events Recieved From Client
 	// This function will start the clue game

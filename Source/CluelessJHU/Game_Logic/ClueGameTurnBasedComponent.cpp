@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "ClueGameTurnBasedSystem.h"
+#include "ClueGameTurnBasedComponent.h"
 #include "Kismet/KismetArrayLibrary.h"
-#include "CluelessJHU/Player/Clueless_PlayerState.h"
+#include "CluelessJHU/Player_Logic/Clueless_PlayerState.h"
 #include "CluelessJHU/Data/Game_StaticData.h"
 
 // Sets default values for this component's properties
-UClueGameTurnBasedSystem::UClueGameTurnBasedSystem()
+UClueGameTurnBasedComponent::UClueGameTurnBasedComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
@@ -17,14 +17,14 @@ UClueGameTurnBasedSystem::UClueGameTurnBasedSystem()
 }
 
 
-void UClueGameTurnBasedSystem::OnPlayerEndTurn()
+void UClueGameTurnBasedComponent::OnPlayerEndTurn()
 {
 	print("[Server: CluelessGameLogic] TODO: End Current Players Turn->Move Turn To Next Player", FColor::Green);
 
 }
 
 // Called when the game starts
-void UClueGameTurnBasedSystem::BeginPlay()
+void UClueGameTurnBasedComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -32,7 +32,7 @@ void UClueGameTurnBasedSystem::BeginPlay()
 	
 }
 
-void UClueGameTurnBasedSystem::OnGameInit()
+void UClueGameTurnBasedComponent::OnGameInit()
 {
 	print("[Server: CluelessGameLogic] Initializing Game...", FColor::Green);
 	
@@ -143,20 +143,20 @@ void UClueGameTurnBasedSystem::OnGameInit()
 
 }
 
-void UClueGameTurnBasedSystem::OnPlayerMakeAccusation()
+void UClueGameTurnBasedComponent::OnPlayerMakeAccusation()
 {
 	print("[Server: CluelessGameLogic] TODO: Check Accusation Cards->Player Status Adjustment", FColor::Green);
 
 	
 }
 
-void UClueGameTurnBasedSystem::OnPlayerMakeMovement()
+void UClueGameTurnBasedComponent::OnPlayerMakeMovement()
 {
 	print("[Server: CluelessGameLogic] TODO: Validate Player Movement->Make Player Movement", FColor::Green);
 
 }
 
-void UClueGameTurnBasedSystem::OnPlayerMakeSuggestion()
+void UClueGameTurnBasedComponent::OnPlayerMakeSuggestion()
 {
 	print("[Server: CluelessGameLogic] TODO: check Player Suggestion", FColor::Green);
 

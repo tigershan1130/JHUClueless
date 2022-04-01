@@ -3,9 +3,9 @@
 
 #include "CGameStateBase.h"
 #include "Net/UnrealNetwork.h"
-#include "CluelessJHU/Player/Clueless_PlayerState.h"
+#include "CluelessJHU/Player_Logic/Clueless_PlayerState.h"
 #include "CluelessJHU/Actors/ClueCharacter.h"
-#include "ClueGameTurnBasedSystem.h"
+#include "ClueGameTurnBasedComponent.h"
 #include "CluelessJHU/Utilities/GameplayAPI.h"
 #include "StaticDataTableManager/Public/StaticDataSubSystem.h"
 #include <Runtime/Engine/Classes/Kismet/GameplayStatics.h>
@@ -338,7 +338,7 @@ void ACGameStateBase::ChangeGameState(ClueGameState CurrentGameState)
 			}
 			else
 			{
-				UClueGameTurnBasedSystem* TurnBasedGameModeComp = (UClueGameTurnBasedSystem*)GM->GetComponentByClass(UClueGameTurnBasedSystem::StaticClass());
+				UClueGameTurnBasedComponent* TurnBasedGameModeComp = (UClueGameTurnBasedComponent*)GM->GetComponentByClass(UClueGameTurnBasedComponent::StaticClass());
 
 				if (TurnBasedGameModeComp)
 				{
