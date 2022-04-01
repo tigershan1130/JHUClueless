@@ -1,4 +1,5 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
+// This Class Contains Both on Server and Client, Handles each player's MVC's Model
 
 #pragma once
 
@@ -27,15 +28,8 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 
-	UFUNCTION(BlueprintCallable)
-		void ChangeGameState(int State);
 
-	UFUNCTION()
-		void SetControlledPawn(APawn* Pawn)
-	{
-		CurrentControlledPawn = Pawn;
-	}
-
+#pragma region Recieves message from server, these states have changed.
 	UFUNCTION()
 		virtual void OnRep_RoleID();
 
@@ -47,6 +41,21 @@ public:
 
 	UFUNCTION()
 		virtual void OnRep_CardsDistributed();
+
+#pragma endregion Recieves message from server, these states have changed.
+
+
+#pragma region Server Functions
+
+	UFUNCTION(BlueprintCallable)
+		void ChangeGameState(int State);
+
+	UFUNCTION()
+		void SetControlledPawn(APawn* Pawn)
+	{
+		CurrentControlledPawn = Pawn;
+	}
+
 
 	UFUNCTION()
 		void SetCardsInHand(TArray<FCardEntityData> CardsForThisPlayer);
@@ -68,6 +77,8 @@ public:
 	{
 		RoleID = ID;
 	}
+
+#pragma endregion Server Functions
 
 protected:
 	/**

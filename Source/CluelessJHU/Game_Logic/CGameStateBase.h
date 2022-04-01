@@ -1,4 +1,5 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
+// THis Class is both on server and Client.
 
 #pragma once
 
@@ -44,28 +45,7 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 
-	// get player Setup Data
-	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
-		TArray<FPlayerSetupStaticData>  GetPlayerSetupStaticData();
-
-	/**
-	 * @brief when player connects to game mode.
-	*/
-	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
-		void ReigsterPlayerControllerOnServer(APlayerController* PlayerController);
-
-	/**
-	 * @brief UnRegister player Controller
-	*/
-	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
-		void UnReigsterPlayerControllerOnServer(APlayerController* PlayerController);
-
-	/**
-	 * @brief Update player when player gets possed
-	*/
-	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
-		void UpdatePlayerControllerWithCharacterOnServer(APlayerController* PlayerController, ACharacter* Character);
-
+#pragma region Client recieves state change from Server
 	/**
 	 * @brief Replication when game is about start host have to manually start
 	*/
@@ -96,7 +76,10 @@ public:
 	UFUNCTION()
 		void OnRep_TurnChanged();
 
+#pragma endregion Client recieves state change from Server
 
+
+#pragma region Server Get Functions
 	/**
 	 * @brief Get Current player and character relation mapping, character are possed character
 	*/
@@ -132,12 +115,6 @@ public:
 		LeftoverDeck = LeftoverCards;
 	}
 
-	// Get game state called from GameAPI
-	UFUNCTION()
-	ClueGameState GetGameState()
-	{
-		return CGameState;
-	}
 
 	// called by server only.
 	// It will change our server' game state
@@ -145,6 +122,39 @@ public:
 		void ChangeGameState(ClueGameState CurrentGameState);
 
 
+	/**
+	 * @brief when player connects to game mode.
+	*/
+	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
+		void ReigsterPlayerControllerOnServer(APlayerController* PlayerController);
+
+	/**
+	 * @brief UnRegister player Controller
+	*/
+	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
+		void UnReigsterPlayerControllerOnServer(APlayerController* PlayerController);
+
+	/**
+	 * @brief Update player when player gets possed
+	*/
+	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
+		void UpdatePlayerControllerWithCharacterOnServer(APlayerController* PlayerController, ACharacter* Character);
+
+#pragma endregion Server Get Functions
+
+
+#pragma region for Both server and client
+	// Get game state called from GameAPI
+	UFUNCTION()
+	ClueGameState GetGameState()
+	{
+		return CGameState;
+	}
+
+	// get player Setup Data
+	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
+		TArray<FPlayerSetupStaticData>  GetPlayerSetupStaticData();
+#pragma endregion for Both server and client
 protected:
 
 	/**

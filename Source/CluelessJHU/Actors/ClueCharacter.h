@@ -1,4 +1,6 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
+// This Class Exist both on Client and Server, This class gets user input and send messages to server
+// This class also recieve events from Clueless_PlayerState to distribute events for GUI and Rendering API.
 
 #pragma once
 
@@ -31,9 +33,10 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
+	// Called to bind functionality to input, This is client only.
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+#pragma region ServerStateChanged
 
 	/*
 	* this will be called by Player State to notify that character is ready to initialize data. Server->Client
@@ -69,7 +72,10 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
 		void OnHostReadyStartGame();
 
+#pragma endregion ServerStateChanged
 	
+
+#pragma region Player Send messages to Server
 	/**
 	 * @brief Interface message, client send message to server to ask server to start the game.
 	*/
@@ -106,6 +112,7 @@ public:
 		void ServerRPCEndTurn();
 	void ServerRPCEndTurn_Implementation();
 
+#pragma endregion Player Send messages to Server
 
 	// ======================= UNIT TESTS(DRIVERS) ============================
 	UFUNCTION(Exec)

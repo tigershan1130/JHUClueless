@@ -1,4 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
+// This Class is Server Control Logic ONLY
 
 #pragma once
 
@@ -19,6 +20,7 @@ public:
 	// Sets default values for this component's properties
 	UClueGameTurnBasedSystem();
 
+#pragma region Server Events Recieved From Client
 	// This function will start the clue game
 	// 1. it will spawn all the corresponding players (Game logic-> Server->Client-> Rendering System)
 	// 2. Initialize cards in the deck?  (Game Logic Self update between client and server)
@@ -40,6 +42,7 @@ public:
 	// this function will make player end turn
 	UFUNCTION()
 		void OnPlayerEndTurn();
+#pragma endregion Server Events Recieved From Client
 
 
 
