@@ -8,6 +8,7 @@
 #include "GameFramework/Character.h"
 #include "CluelessJHU/Player_Logic/Clueless_PlayerState.h"
 #include "CluelessJHU/Game_Logic/ClueGameTurnBasedComponent.h"
+#include "CluelessJHU/Game_Logic/CluelessMovementComponent.h"
 #include "Math/UnrealMathUtility.h"
 #include "CluelessJHU/Game_Logic/CGameStateBase.h"
 #include "GameplayAPI.generated.h"
@@ -112,11 +113,6 @@ public:
 		if (CurrentCharacter->IsLocallyControlled())
 		{
 			ActivePlayerCards = ((AClueless_PlayerState*)CurrentCharacter->GetPlayerState())->GetCardsInHand();
-
-			//for (int i = 0; i < ActivePlayerCards.Num(); i++)
-			//{
-			//	UE_LOG(LogTemp, Warning, TEXT("Cards %d:  %s"), i, *(ActivePlayerCards[i].CardName.ToString()));
-			//}
 		}
 
 		return ActivePlayerCards;
@@ -143,6 +139,69 @@ public:
 
 
 		return GameState->GetLeftoverCards(); 
+	}
+
+
+	/**
+	* @brief For both client and server
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
+	static FPlayerSetupStaticData GetCurrentTurnCharacterInfo(int CurrentTurnIndex , UObject* WorldContextObj)
+	{
+		FPlayerSetupStaticData PlayerSetupData;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return PlayerSetupData;
+
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return PlayerSetupData;
+
+		TArray<FPlayerCharacterRelationEntry> PlayerRelationMapping = GameState->GetCharatersRelationMapping();
+
+		if (PlayerRelationMapping.Num() <= 0)
+			return PlayerSetupData;
+
+		TArray<FPlayerSetupStaticData> PlayerStaticSetupData = GetPlayerStaticSetupData(World);
+
+
+		for (int i = 0; i < PlayerRelationMapping.Num(); i++)
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("Relationship index: %d , Name %s"), PlayerRelationMapping[i].Index, *(PlayerRelationMapping[i].Character->GetName()));
+
+			if (i == CurrentTurnIndex)
+			{
+				int index = PlayerRelationMapping[i].Index;
+				PlayerSetupData = PlayerStaticSetupData[index];				
+				break;
+			}
+		}
+
+		return PlayerSetupData;
+	}
+
+
+	/**
+	* @brief For both client and server
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
+		static int GetCurrentTurn(UObject* WorldContextObj)
+	{
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return 0;
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return 0;
+
+		return GameState->GetCurrentTurn();
 	}
 
 	/**
@@ -273,11 +332,11 @@ public:
 		}
 		else
 		{
-			UClueGameTurnBasedComponent* TurnBasedGameModeComp = (UClueGameTurnBasedComponent*)GM->GetComponentByClass(UClueGameTurnBasedComponent::StaticClass());
+			UCluelessMovementComponent* GameMovementModeComp = (UCluelessMovementComponent*)GM->GetComponentByClass(UCluelessMovementComponent::StaticClass());
 
-			if (TurnBasedGameModeComp)
+			if (GameMovementModeComp)
 			{
-				TurnBasedGameModeComp->OnPlayerMakeMovement();
+				GameMovementModeComp->OnPlayerMakeMovement();
 			}
 		}
 

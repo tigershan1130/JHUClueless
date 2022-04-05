@@ -8,6 +8,7 @@
 #include "ClueGameTurnBasedComponent.h"
 #include "CluelessJHU/Utilities/GameplayAPI.h"
 #include "StaticDataTableManager/Public/StaticDataSubSystem.h"
+#include "CluelessJHU/Utilities/GameplayAPI.h"
 #include <Runtime/Engine/Classes/Kismet/GameplayStatics.h>
 
 
@@ -27,6 +28,7 @@ void ACGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(ACGameStateBase, CGameState);
 	DOREPLIFETIME(ACGameStateBase, LeftoverDeck);
 	DOREPLIFETIME(ACGameStateBase, DistributedCardsPlayers);
+	DOREPLIFETIME(ACGameStateBase, PlayerTurnIndex);
 }
 
 void ACGameStateBase::PreInitializeComponents()
@@ -234,6 +236,11 @@ void ACGameStateBase::OnRep_PlayerCharacterMappingChanged()
 */
 void ACGameStateBase::OnRep_GameStateChanged()
 {
+	int index = 0;
+
+	TArray<FPlayerSetupStaticData> PlayerStaticSetupData = UGameplayAPI::GetPlayerStaticSetupData(GetWorld());
+
+
 	// game state has changed, we notify all the clue character players
 	for (auto& Entry : PlayerRelationMapping.PlayerRelationMapping)
 	{
@@ -241,10 +248,24 @@ void ACGameStateBase::OnRep_GameStateChanged()
 
 		if (ClueCharacter != nullptr)
 		{
-			if (ClueCharacter->IsLocallyControlled())			
+			if (ClueCharacter->IsLocallyControlled())
+			{
 				ClueCharacter->OnGameStateChanged(CGameState);
+
+				if (CGameState == ClueGameState::Gaming && Entry.Index == 0)
+				{
+					//UE_LOG(LogTemp, Error, TEXT("Changing UI Character: %s"), *(PlayerStaticSetupData[Entry.Index].CharacterName.ToString()));
+					ClueCharacter->OnThisCharacterTurn();
+				}
+				else if (CGameState == ClueGameState::Gaming && Entry.Index != 0)
+				{
+					ClueCharacter->OnOtherCharacterTurn();
+				}
+			}
 			
 		}
+
+		index++;
 	}
 }
 
@@ -254,7 +275,36 @@ void ACGameStateBase::OnRep_GameStateChanged()
 */
 void ACGameStateBase::OnRep_TurnChanged()
 {
+	// when a Player's turn is changed
+	// We need to find the correct player to notify its
+	// PlayerTurnIndex;
+	TArray<FPlayerCharacterRelationEntry> CPlayerRelationMapping = GetCharatersRelationMapping();
 
+	TArray<FPlayerSetupStaticData> PlayerStaticSetupData = UGameplayAPI::GetPlayerStaticSetupData(GetWorld());
+
+	// game state has changed, we notify all the clue character players
+	for (int i = 0; i < CPlayerRelationMapping.Num(); i++)
+	{
+		AClueCharacter* ClueCharacter = (AClueCharacter*)CPlayerRelationMapping[i].Character;
+
+		if (ClueCharacter != nullptr)
+		{
+			if (ClueCharacter->IsLocallyControlled())
+			{
+				if (CGameState == ClueGameState::Gaming && CPlayerRelationMapping[i].Index == PlayerTurnIndex)
+				{
+					ClueCharacter->OnThisCharacterTurn();
+
+					//UE_LOG(LogTemp, Error, TEXT("Local Name Same Turn: %s"), *(PlayerStaticSetupData[CPlayerRelationMapping[i].Index].CharacterName.ToString()));
+				}
+				else if (CGameState == ClueGameState::Gaming && CPlayerRelationMapping[i].Index != PlayerTurnIndex)
+				{
+					//UE_LOG(LogTemp, Error, TEXT("Other Name: %s"), *(PlayerStaticSetupData[CPlayerRelationMapping[i].Index].CharacterName.ToString()));
+					ClueCharacter->OnOtherCharacterTurn();
+				}
+			}
+		}
+	}
 
 }
 
@@ -351,5 +401,25 @@ void ACGameStateBase::ChangeGameState(ClueGameState CurrentGameState)
 
 		OnRep_GameStateChanged();
 	}
+
+}
+
+// switch to next turn
+void ACGameStateBase::ChangeToNextTurnIndex()
+{
+	int TotalActivePlayers = GetActivePlayerCharacters_Server().Num();
+
+	if (TotalActivePlayers <= 0)
+		return;
+
+	PlayerTurnIndex = PlayerTurnIndex + 1;
+
+	// clamp
+	if (PlayerTurnIndex >= TotalActivePlayers)
+		PlayerTurnIndex = 0;
+
+	// listen server requires special networking notifications for Replication
+	if (GetNetMode() == NM_ListenServer)
+		OnRep_TurnChanged();
 
 }

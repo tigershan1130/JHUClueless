@@ -9,6 +9,8 @@
 #include "Components/ActorComponent.h"
 #include "CluelessMovementComponent.generated.h"
 
+#define print(text, color) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, color,text)
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CLUELESSJHU_API UCluelessMovementComponent : public UActorComponent
@@ -19,13 +21,16 @@ public:
 	// Sets default values for this component's properties
 	UCluelessMovementComponent();
 
+
+#pragma region Server RPC calls
+	// this function will make player to make a movement
+	UFUNCTION()
+		void OnPlayerMakeMovement();
+
+#pragma endregion Server RPC calls
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
 		
 };

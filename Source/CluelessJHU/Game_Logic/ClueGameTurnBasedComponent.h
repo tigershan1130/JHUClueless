@@ -35,10 +35,6 @@ public:
 	UFUNCTION()
 		void OnPlayerMakeAccusation();
 
-	// this function will make player to make a movement
-	UFUNCTION()
-		void OnPlayerMakeMovement();
-
 	// This function will make player to make a suggestion
 	UFUNCTION()
 		void OnPlayerMakeSuggestion();

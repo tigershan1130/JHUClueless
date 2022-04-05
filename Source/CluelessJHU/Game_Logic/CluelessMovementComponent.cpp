@@ -24,11 +24,10 @@ void UCluelessMovementComponent::BeginPlay()
 }
 
 
-// Called every frame
-void UCluelessMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UCluelessMovementComponent::OnPlayerMakeMovement()
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	print("[Server: CluelessGameLogic] TODO: Validate Player Movement->Make Player Movement", FColor::Red);
 
-	// ...
 }
+
 

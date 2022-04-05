@@ -59,6 +59,13 @@ void AClueCharacter::ServerRPCEndTurn_Implementation()
 {
 	// this is server side clue character call
 	UGameplayAPI::EndPlayerTurn_Server((UObject*)this);
+
+	// Make sure our local character Option UI is closed.
+	if (this->IsLocallyControlled())
+	{
+		OnEndCharacterTurn();
+	}
+
 }
 
 // check if client is ready

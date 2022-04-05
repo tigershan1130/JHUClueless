@@ -79,7 +79,7 @@ public:
 #pragma endregion Client recieves state change from Server
 
 
-#pragma region Server Get Functions
+#pragma region Server GetAndSet Functions
 	/**
 	 * @brief Get Current player and character relation mapping, character are possed character
 	*/
@@ -122,6 +122,9 @@ public:
 		void ChangeGameState(ClueGameState CurrentGameState);
 
 
+	UFUNCTION()
+		void ChangeToNextTurnIndex();
+
 	/**
 	 * @brief when player connects to game mode.
 	*/
@@ -140,7 +143,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
 		void UpdatePlayerControllerWithCharacterOnServer(APlayerController* PlayerController, ACharacter* Character);
 
-#pragma endregion Server Get Functions
+#pragma endregion Server GetAndSet Functions
 
 
 #pragma region for Both server and client
@@ -149,6 +152,13 @@ public:
 	ClueGameState GetGameState()
 	{
 		return CGameState;
+	}
+
+	//
+	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
+		int GetCurrentTurn()
+	{
+		return PlayerTurnIndex;
 	}
 
 	// get player Setup Data
@@ -197,7 +207,7 @@ protected:
 	 * @brief When turn changed we keep player's turn using this data.
 	*/
 	UPROPERTY(ReplicatedUsing = OnRep_TurnChanged)
-		int PlayerTurn;
+		int PlayerTurnIndex = 0;
 
 	
 	/**

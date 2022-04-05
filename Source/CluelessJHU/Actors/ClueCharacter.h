@@ -29,6 +29,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 		bool ClientReady = false;
 
+
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -71,6 +73,20 @@ public:
 	*/
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
 		void OnHostReadyStartGame();
+
+	/*
+	* @brief When character is at his/her turn.
+	*/
+	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
+		void OnThisCharacterTurn();
+
+	// when controlled player turn ends.
+	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
+		void OnEndCharacterTurn();
+
+	// when non-controlled Player ends turn
+	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
+		void OnOtherCharacterTurn();
 
 #pragma endregion ServerStateChanged
 	

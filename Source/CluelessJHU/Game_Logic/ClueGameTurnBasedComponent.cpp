@@ -19,8 +19,15 @@ UClueGameTurnBasedComponent::UClueGameTurnBasedComponent()
 
 void UClueGameTurnBasedComponent::OnPlayerEndTurn()
 {
-	print("[Server: CluelessGameLogic] TODO: End Current Players Turn->Move Turn To Next Player", FColor::Green);
+	print("[Server: CluelessGameLogic] End Current Players Turn", FColor::Green);
 
+	//1. Spawn and distributing cards
+	ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
+
+	if (GameState == nullptr)
+		return;
+
+	GameState->ChangeToNextTurnIndex();
 }
 
 // Called when the game starts
@@ -139,26 +146,20 @@ void UClueGameTurnBasedComponent::OnGameInit()
 	}
 
 	// Spawn Player Character
-	print("[Server: CluelessGameLogic] TODO: Set Player Character Spawn and Initialization", FColor::Green);
-
+	print("[Server: CluelessGameLogic] TODO: Set Player Character Spawn and Initialization", FColor::Red);
 }
+
 
 void UClueGameTurnBasedComponent::OnPlayerMakeAccusation()
 {
-	print("[Server: CluelessGameLogic] TODO: Check Accusation Cards->Player Status Adjustment", FColor::Green);
+	print("[Server: CluelessGameLogic] TODO: Check Accusation Cards->Player Status Adjustment", FColor::Red);
 
 	
 }
 
-void UClueGameTurnBasedComponent::OnPlayerMakeMovement()
-{
-	print("[Server: CluelessGameLogic] TODO: Validate Player Movement->Make Player Movement", FColor::Green);
-
-}
-
 void UClueGameTurnBasedComponent::OnPlayerMakeSuggestion()
 {
-	print("[Server: CluelessGameLogic] TODO: check Player Suggestion", FColor::Green);
+	print("[Server: CluelessGameLogic] TODO: check Player Suggestion", FColor::Red);
 
 }
 
