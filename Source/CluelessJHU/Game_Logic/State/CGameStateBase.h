@@ -154,7 +154,7 @@ public:
 		return CGameState;
 	}
 
-	//
+	// Get current player's turn index. Who's turn is it?
 	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
 		int GetCurrentTurn()
 	{
