@@ -6,11 +6,11 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "CluelessJHU/Data/Game_StaticData.h"
 #include "GameFramework/Character.h"
-#include "CluelessJHU/Player_Logic/Clueless_PlayerState.h"
-#include "CluelessJHU/Game_Logic/ClueGameTurnBasedComponent.h"
-#include "CluelessJHU/Game_Logic/CluelessMovementComponent.h"
+#include "CluelessJHU/Player_Logic/State/Clueless_PlayerState.h"
+#include "CluelessJHU/Game_Logic/Controller/ClueGameTurnBasedComponent.h"
+#include "CluelessJHU/Game_Logic/Controller/CluelessMovementComponent.h"
 #include "Math/UnrealMathUtility.h"
-#include "CluelessJHU/Game_Logic/CGameStateBase.h"
+#include "CluelessJHU/Game_Logic/State/CGameStateBase.h"
 #include "GameplayAPI.generated.h"
 	
 /**

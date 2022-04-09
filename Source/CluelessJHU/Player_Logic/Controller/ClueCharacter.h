@@ -6,7 +6,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "CluelessJHU/Game_Logic/CGameStateBase.h"
+#include "CluelessJHU/Game_Logic/State/CGameStateBase.h"
 #include "CluelessJHU/Data/Game_StaticData.h"
 #include "ClueCharacter.generated.h"
 

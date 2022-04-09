@@ -3,7 +3,7 @@
 
 #include "ClueGameTurnBasedComponent.h"
 #include "Kismet/KismetArrayLibrary.h"
-#include "CluelessJHU/Player_Logic/Clueless_PlayerState.h"
+#include "CluelessJHU/Player_Logic/State/Clueless_PlayerState.h"
 #include "CluelessJHU/Data/Game_StaticData.h"
 
 // Sets default values for this component's properties

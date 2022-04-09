@@ -4,8 +4,8 @@
 #include "ClueCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "CluelessJHU/Utilities/GameplayAPI.h"
-#include "CluelessJHU/Player_Logic/Clueless_PlayerState.h"
-#include "CluelessJHU/Game_Logic/CGameStateBase.h"
+#include "CluelessJHU/Player_Logic/State/Clueless_PlayerState.h"
+#include "CluelessJHU/Game_Logic/State/CGameStateBase.h"
 
 // Sets default values
 AClueCharacter::AClueCharacter()

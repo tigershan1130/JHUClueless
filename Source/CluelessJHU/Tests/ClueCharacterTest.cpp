@@ -1,7 +1,7 @@
 #include "CoreMinimal.h"
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationCommon.h"
-#include "CluelessJHU/Actors/ClueCharacter.h"
+#include "CluelessJHU/Player_Logic/Controller/ClueCharacter.h"
 
 static const int TestFlags = (
 	EAutomationTestFlags::CommandletContext

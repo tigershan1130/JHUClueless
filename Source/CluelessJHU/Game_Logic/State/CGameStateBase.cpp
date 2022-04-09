@@ -3,12 +3,11 @@
 
 #include "CGameStateBase.h"
 #include "Net/UnrealNetwork.h"
-#include "CluelessJHU/Player_Logic/Clueless_PlayerState.h"
-#include "CluelessJHU/Actors/ClueCharacter.h"
-#include "ClueGameTurnBasedComponent.h"
+#include "CluelessJHU/Player_Logic/State/Clueless_PlayerState.h"
+#include "CluelessJHU/Player_Logic/Controller/ClueCharacter.h"
+#include "CluelessJHU/Game_Logic/Controller/ClueGameTurnBasedComponent.h"
 #include "CluelessJHU/Utilities/GameplayAPI.h"
 #include "StaticDataTableManager/Public/StaticDataSubSystem.h"
-#include "CluelessJHU/Utilities/GameplayAPI.h"
 #include <Runtime/Engine/Classes/Kismet/GameplayStatics.h>
 
 

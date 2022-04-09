@@ -9,7 +9,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "CGameStateBase.h"
+#include "CluelessJHU/Game_Logic/State/CGameStateBase.h"
 #include "ClueGameTurnBasedComponent.generated.h"
 
 #define print(text, color) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, color,text)

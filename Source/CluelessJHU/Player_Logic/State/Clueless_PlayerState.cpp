@@ -3,7 +3,7 @@
 
 #include "Clueless_PlayerState.h"
 #include "Net/UnrealNetwork.h"
-#include "CluelessJHU/Actors/ClueCharacter.h"
+#include "CluelessJHU/Player_Logic/Controller/ClueCharacter.h"
 
 AClueless_PlayerState::AClueless_PlayerState()
 {

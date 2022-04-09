@@ -74,8 +74,6 @@ public:
 		FText Description;
 };
 
-
-
 USTRUCT(BlueprintType)
 struct FPlayerCharacterRelationEntry : public FFastArraySerializerItem
 {
