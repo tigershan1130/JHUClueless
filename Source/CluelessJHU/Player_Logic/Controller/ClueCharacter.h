@@ -6,8 +6,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
+#include "CluelessJHU/Graphical_API/BlockPointActor.h"
+#include "CluelessJHU/Player_Logic/State/Clueless_PlayerState.h"
 #include "CluelessJHU/Game_Logic/State/CGameStateBase.h"
 #include "CluelessJHU/Data/Game_StaticData.h"
+#include "CluelessJHU/Player_Logic/Controller/CPawn.h"
 #include "ClueCharacter.generated.h"
 
 UCLASS()
@@ -29,7 +33,12 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 		bool ClientReady = false;
 
+		/* This holds the visual character for Graphical API*/
+	UPROPERTY(BlueprintReadWrite)
+		ACPawn* ClientControlledVisualActor;
 
+	UPROPERTY(BlueprintReadWrite)
+		TArray<ABlockPointActor*> ClientBlockPoints;
 
 public:
 	// Called every frame
@@ -37,6 +46,18 @@ public:
 
 	// Called to bind functionality to input, This is client only.
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UFUNCTION()
+		void InitClientVisualCharacter(int RoleID);
+
+	UFUNCTION()
+		void SetVisualPawnToBlock(int BlockID, int RoleID);
+
+	UFUNCTION()
+	ACPawn* GetClientVisualActor()
+	{
+		return ClientControlledVisualActor;
+	}
 
 #pragma region ServerStateChanged
 

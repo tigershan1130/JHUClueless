@@ -26,6 +26,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UTexture2D* texture;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int InitialBlockID;
 };
 
 USTRUCT(BlueprintType, Blueprintable)

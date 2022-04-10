@@ -45,7 +45,6 @@ public:
 #pragma endregion Server Events Recieved From Client
 
 
-
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

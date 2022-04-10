@@ -7,6 +7,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "CluelessJHU/Game_Logic/State/CluelessMovementStateComponent.h"
 #include "CluelessMovementComponent.generated.h"
 
 #define print(text, color) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, color,text)
@@ -23,7 +24,7 @@ public:
 #pragma region Server RPC calls
 	// this function will make player to make a movement
 	UFUNCTION()
-		void OnPlayerMakeMovement();
+		void OnPlayerMakeMovement(int BlockID, int CurrentRoleID);
 
 
 
@@ -31,6 +32,8 @@ public:
 
 protected:
 	// Called when the game starts
-	virtual void BeginPlay() override;
-		
+	virtual void BeginPlay() override;		
+
+	UPROPERTY()
+		UCluelessMovementStateComponent* CluelessMovementStateCompCache = nullptr;
 };

@@ -170,6 +170,24 @@ void ACGameStateBase::UpdatePlayerControllerWithCharacterOnServer(APlayerControl
 	}
 }
 
+// Refresh Turn Index.
+void ACGameStateBase::RefreshTurnIndex()
+{
+	TArray<AClueless_PlayerState*> ActivePlayerStates = UGameplayAPI::GetActivePlayerStates(GetWorld());
+
+	FPlayerSetupStaticData CurrentPlayerStaticData = UGameplayAPI::GetCurrentTurnCharacterInfo(PlayerTurnIndex, GetWorld());
+
+	for (auto& Entry : ActivePlayerStates)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Role ID %d, CurrentPlayerID: %d"), Entry->GetRoleID(), CurrentPlayerStaticData.ID);
+		if (Entry->GetRoleID() == CurrentPlayerStaticData.ID-1)		
+			Entry->SetGameAction(7);		
+		else		
+			Entry->SetGameAction(-1);		
+	}
+	
+}
+
 /**
  * @brief Ok, 3 Players are inside game, let's start game.
 */
@@ -392,6 +410,8 @@ void ACGameStateBase::ChangeGameState(ClueGameState CurrentGameState)
 				if (TurnBasedGameModeComp)
 				{
 					TurnBasedGameModeComp->OnGameInit();
+
+					RefreshTurnIndex();
 				}
 			}
 		}
@@ -416,6 +436,8 @@ void ACGameStateBase::ChangeToNextTurnIndex()
 	// clamp
 	if (PlayerTurnIndex >= TotalActivePlayers)
 		PlayerTurnIndex = 0;
+
+	RefreshTurnIndex();
 
 	// listen server requires special networking notifications for Replication
 	if (GetNetMode() == NM_ListenServer)

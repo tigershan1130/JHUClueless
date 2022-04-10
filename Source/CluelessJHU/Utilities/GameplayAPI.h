@@ -205,6 +205,38 @@ public:
 	}
 
 	/**
+	* @brief Get Role Location
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
+		static ACharacter* GetCharacterFromRoleID(UObject* WorldContextObj, int RoleID)
+	{
+		FPlayerSetupStaticData RoleEntry;
+		ACharacter* RoleCharacter = nullptr;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return RoleCharacter;
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		TArray<FPlayerCharacterRelationEntry> PlayerRelationMapping = GameState->GetCharatersRelationMapping();
+
+		if (PlayerRelationMapping.Num() <= 0)
+			return RoleCharacter;
+
+		for (auto& Entry : PlayerRelationMapping)
+		{
+			if (Entry.Index == RoleID)
+			{
+				RoleCharacter = Entry.Character;
+			}
+		}
+
+		return RoleCharacter;		
+	}
+
+	/**
 	* @brief For both client and server
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
@@ -246,6 +278,37 @@ public:
 		return DynamicRelationMapping;
 	}
 
+	UFUNCTION(BlueprintCallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
+		static TArray<AClueless_PlayerState*> GetActivePlayerStates(UObject* WorldContextObj)
+	{
+		TArray<AClueless_PlayerState*> ActivePlayerStates;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return ActivePlayerStates;
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return ActivePlayerStates;
+
+		TArray<FPlayerCharacterRelationEntry> PlayerRelationMapping = GameState->GetCharatersRelationMapping();
+
+		for (auto& Entry : PlayerRelationMapping)
+		{
+			APlayerState* PlayerState = Entry.Character->GetPlayerState();
+			if (PlayerState != nullptr)
+			{
+				AClueless_PlayerState* CPlayerState = (AClueless_PlayerState*)PlayerState;
+				if (CPlayerState)
+					ActivePlayerStates.Add(CPlayerState);
+			}
+		}
+
+		return ActivePlayerStates;		
+	}
+
 #pragma endregion Server and Client calls
 
 
@@ -254,7 +317,7 @@ public:
 	* Update player character into Mapping.
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
-	static 	void UpdatePlayerControllerWithCharacter_Server(ACharacter* CurrentCharacter, APlayerController* PlayerController, UObject* WorldContextObj)
+		static void UpdatePlayerControllerWithCharacter_Server(ACharacter* CurrentCharacter, APlayerController* PlayerController, UObject* WorldContextObj)
 	{
 		TArray<FPlayerSetupStaticData> PlayerStaticSetupData;
 
@@ -270,8 +333,6 @@ public:
 
 		GameState->UpdatePlayerControllerWithCharacterOnServer(PlayerController, CurrentCharacter);
 	}
-
-
 
 	// This will change the game state of the current game.
 	// should be called on server
@@ -316,9 +377,8 @@ public:
 
 	}
 
-
 	UFUNCTION(BlueprintCallable, Category = "Gamplay API", meta = (WorldContext = "WorldContextObj"))
-		static void MakeMovement_Server(UObject* WorldContextObj)
+		static void MakeMovement_Server(UObject* WorldContextObj, int BlockID, int CurrentRoleID)
 	{
 		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
 
@@ -334,15 +394,13 @@ public:
 		{
 			UCluelessMovementComponent* GameMovementModeComp = (UCluelessMovementComponent*)GM->GetComponentByClass(UCluelessMovementComponent::StaticClass());
 
-			if (GameMovementModeComp)
+			if (GameMovementModeComp != nullptr)
 			{
-				GameMovementModeComp->OnPlayerMakeMovement();
+				GameMovementModeComp->OnPlayerMakeMovement(BlockID, CurrentRoleID);
 			}
 		}
 
 	}
-
-
 
 	UFUNCTION(BlueprintCallable, Category = "Gamplay API", meta = (WorldContext = "WorldContextObj"))
 		static void MakeSuggestion_Server(UObject* WorldContextObj)
@@ -393,7 +451,6 @@ public:
 		}
 
 	}
-
 
 #pragma endregion Server Calls
 

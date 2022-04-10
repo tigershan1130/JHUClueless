@@ -3,6 +3,7 @@
 
 #include "ClueGameTurnBasedComponent.h"
 #include "Kismet/KismetArrayLibrary.h"
+#include "CluelessJHU/Utilities/GameplayAPI.h"
 #include "CluelessJHU/Player_Logic/State/Clueless_PlayerState.h"
 #include "CluelessJHU/Data/Game_StaticData.h"
 
@@ -146,7 +147,19 @@ void UClueGameTurnBasedComponent::OnGameInit()
 	}
 
 	// Spawn Player Character
-	print("[Server: CluelessGameLogic] TODO: Set Player Character Spawn and Initialization", FColor::Red);
+	print("[Server: CluelessGameLogic] Set Player Character Initial Block and Location", FColor::Green);
+	
+	for (int i = 0; i < ActivePlayerStates.Num(); i++)
+	{
+		// Get current Player Data
+		FPlayerSetupStaticData PlayerSetupData = UGameplayAPI::GetCurrentRoleData(ActivePlayerStates[i]->GetRoleID(), GetWorld());
+
+		ActivePlayerStates[i]->SetBlockID(PlayerSetupData.InitialBlockID);
+
+		UE_LOG(LogTemp, Warning, TEXT("Set Role ID %d to Block ID %d"), ActivePlayerStates[i]->GetRoleID(), ActivePlayerStates[i]->GetBlockID());
+	}
+
+	
 }
 
 

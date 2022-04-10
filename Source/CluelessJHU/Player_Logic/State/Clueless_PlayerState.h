@@ -5,10 +5,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
+#include "CluelessJHU/CActor.h"
 #include "CluelessJHU/Data/Game_StaticData.h"
 #include "Clueless_PlayerState.generated.h"
-
-
 
 /**
  *
@@ -42,6 +41,9 @@ public:
 	UFUNCTION()
 		virtual void OnRep_CardsDistributed();
 
+	UFUNCTION()
+		virtual void OnRep_BlockChanged();
+
 #pragma endregion Recieves message from server, these states have changed.
 
 
@@ -56,6 +58,16 @@ public:
 		CurrentControlledPawn = Pawn;
 	}
 
+
+	UFUNCTION()
+		void SetGameAction(int Action)
+	{
+		CurrentGameAction = Action;
+
+		// for special case of listen server
+		if (GetNetMode() == ENetMode::NM_ListenServer)
+			OnRep_GameActionChanged();
+	}
 
 	UFUNCTION()
 		void SetCardsInHand(TArray<FCardEntityData> CardsForThisPlayer);
@@ -73,9 +85,31 @@ public:
 	}
 
 	UFUNCTION()
+		int GetRoleID()
+	{
+		return RoleID;
+	}
+
+	UFUNCTION()
 		void SetRoleID(int ID)
 	{
 		RoleID = ID;
+	}
+
+	UFUNCTION()
+		void SetBlockID(int BlockID)
+	{
+		CurrentBlockID = BlockID;
+
+		// for special case of listen server
+		if (GetNetMode() == ENetMode::NM_ListenServer)
+			OnRep_BlockChanged();
+	}
+
+	UFUNCTION()
+		int GetBlockID()
+	{
+		return CurrentBlockID;
 	}
 
 #pragma endregion Server Functions
@@ -101,7 +135,7 @@ protected:
 	 * or should we wait for other's players turn.
 	*/
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_GameActionChanged)
-		int CurrentGameAction;
+		int CurrentGameAction; 
 
 
 	/**
@@ -110,11 +144,17 @@ protected:
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_ChangedPawn)
 		APawn* CurrentControlledPawn;
 
-
 	/*
 	* @brief this holds all cards current player have
 	*/
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_CardsDistributed)
 		TArray<FCardEntityData> HandCards;
 
+	/*
+	* @brief Current Location of the Player
+	*/
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_BlockChanged)
+		int CurrentBlockID;
+
+	
 };

@@ -29,25 +29,68 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) // because hall way can only occupied once.
 		bool IsHallWay;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) // check if it is a spawn point, if it is, it can go back to this point
+		bool IsSpawnPoint;
 };
 
 
-// This is Dynamic Movement Info cache that's been allocated in runtime 
-USTRUCT()
-struct CLUELESSJHU_API FDynamicMovementInfo
+// This is Dynamic Movement Info cache that's been allocated in runtime
+USTRUCT(BlueprintType)
+struct FDynamicMovementEntry : public FFastArraySerializerItem
 {
-	GENERATED_USTRUCT_BODY();
+	GENERATED_USTRUCT_BODY()
 public:
-
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		FStaticMovementBlock BlockInfo;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		TArray<int> OccupiedRoles;
+
+	UPROPERTY(BlueprintReadWrite)
+		int BlockID;
+
+	void PreReplicatedRemove(const struct FDynamicMovementInfoContainer& ArraySerializer) {}
+	void PostReplicatedAdd(const struct FDynamicMovementInfoContainer& ArraySerializer) {}
+	void PostReplicatedChange(const struct FDynamicMovementInfoContainer& ArraySerializer) {}
+
+
+	bool operator==(const FDynamicMovementEntry& lhs) const
+	{
+		return (BlockID == lhs.BlockID);
+	}
+
 };
 
 
+USTRUCT()
+struct FDynamicMovementInfoContainer : public FFastArraySerializer
+{
+	GENERATED_USTRUCT_BODY()
 
+		UPROPERTY()
+		TArray<FDynamicMovementEntry> DynamicMovementInfoCache;
+
+	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
+	{
+		return FastArrayDeltaSerialize<FDynamicMovementEntry>(DynamicMovementInfoCache, DeltaParms, *this);
+	}
+};
+
+
+template<>
+struct TStructOpsTypeTraits<FDynamicMovementInfoContainer> : public TStructOpsTypeTraitsBase2<FDynamicMovementInfoContainer>
+{
+	enum
+	{
+		WithNetDeltaSerializer = true,
+	};
+};
+
+
+/*
+* This is the main class to handle all the data change for the Clueless Movement Logic.
+*/
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CLUELESSJHU_API UCluelessMovementStateComponent : public UActorComponent
 {
@@ -57,18 +100,51 @@ public:
 	// Sets default values for this component's properties
 	UCluelessMovementStateComponent();
 
+	// for replication
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	// Get Movable Blocks
+	UFUNCTION()
+	TArray<int> GetMovableBlocks(int CurrentBlockIDs);
+
+	UFUNCTION()
+		TArray<FDynamicMovementEntry> GetDynamicMovmentCache();
+
+	UFUNCTION()
+		void ServerUpdateOccupied(int BlockID, int PreviousBlockID, int RoleID);
+
+	UFUNCTION()
+		FDynamicMovementEntry GetMovementBlock(int BlockID)
+	{
+		TArray<FDynamicMovementEntry> DynamicMovementEntry = GetDynamicMovmentCache();
+		FDynamicMovementEntry FoundEntry;
+		FoundEntry.BlockID = -1;
+
+		// Find found Entry.
+		for (auto& Entry : DynamicMovementEntry)
+		{
+			if (Entry.BlockID == BlockID)
+				FoundEntry = Entry;
+		}
+
+		return FoundEntry;
+	}
+
+#pragma region Client recieves state change from Server
+	// On Dynamic Movement Info changed.
+	UFUNCTION()
+	void OnRep_DynamicMovementInfoChanged();
+
+
+#pragma endregion Client recieves state change from Server
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-
 private:
-	// Map of <BlockID, FDynamicMovementInfo>
-	UPROPERTY()
-		TMap<int, FDynamicMovementInfo> MovementInformation;
-		
+
+	UPROPERTY(ReplicatedUsing = OnRep_DynamicMovementInfoChanged)
+	FDynamicMovementInfoContainer DynamicMovementInfo;
+
 };

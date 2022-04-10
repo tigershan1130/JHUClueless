@@ -143,6 +143,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
 		void UpdatePlayerControllerWithCharacterOnServer(APlayerController* PlayerController, ACharacter* Character);
 
+	UFUNCTION()
+		void RefreshTurnIndex();
+
 #pragma endregion Server GetAndSet Functions
 
 
