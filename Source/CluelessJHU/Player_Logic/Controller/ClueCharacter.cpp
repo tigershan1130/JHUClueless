@@ -45,17 +45,23 @@ void AClueCharacter::ServerRPCMakeMovement_Implementation(int BlockID)
 		UGameplayAPI::MakeMovement_Server((UObject*)this, BlockID, CPlayerState->GetRoleID());
 }
 
-void AClueCharacter::ServerRPCMakeSuggestion_Implementation(int CWeaponID, int CRoleID, int CRoomID)
+void AClueCharacter::ServerRPCMakeSuggestion_Implementation(const FString& CWeaponID, const FString& CRoleID, const FString& CRoomID)
 {
+	AClueless_PlayerState* CPlayerState = (AClueless_PlayerState*)this->GetPlayerState();
+
 	// this is server side Clue Character call
-	UGameplayAPI::MakeSuggestion_Server((UObject*)this);
+	if (CPlayerState)
+		UGameplayAPI::MakeSuggestion_Server((UObject*)this, CPlayerState->GetRoleID(), CWeaponID, CRoleID, CRoomID);
 }
 
 
-void AClueCharacter::ServerRPCMakeAccusation_Implementation(int CWeaponID, int CRoleID, int CRoomID)
+void AClueCharacter::ServerRPCMakeAccusation_Implementation(const FString& CWeaponID, const FString& CRoleID, const FString& CRoomID)
 {
+	AClueless_PlayerState* CPlayerState = (AClueless_PlayerState*)this->GetPlayerState();
+
 	// this is server side Clue Character call
-	UGameplayAPI::MakeAccusation_Server((UObject*)this);
+	if (CPlayerState)
+		UGameplayAPI::MakeAccusation_Server((UObject*)this, CPlayerState->GetRoleID(), CWeaponID, CRoleID, CRoomID);
 }
 
 void AClueCharacter::ServerRPCEndTurn_Implementation()

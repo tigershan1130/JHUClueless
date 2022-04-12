@@ -25,6 +25,42 @@ public:
 
 #pragma region Server and Client calls
 	/*
+	*
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
+		static FStaticMovementBlock GetBlockInfo(int BlockID, UObject* WorldContextObj)
+	{
+		FStaticMovementBlock FoundBlock;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+		
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return FoundBlock;
+
+		UCluelessMovementStateComponent* CluelessMovementStateCompCache = (UCluelessMovementStateComponent*)(GameState->GetComponentByClass(UCluelessMovementStateComponent::StaticClass()));
+		
+
+		if (CluelessMovementStateCompCache == nullptr)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Invalid Movement State Component"));
+		}
+
+		TArray<FStaticMovementBlock> StaticMovementDataList = CluelessMovementStateCompCache->GetStaticMovementCache();
+
+		for (auto& Entry : StaticMovementDataList)
+		{
+			if (Entry.BlockID == BlockID)
+			{
+				FoundBlock = Entry;
+			}
+		}
+
+		return FoundBlock;
+	}
+
+	/*
 	Get current role data for both client and server
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
@@ -353,7 +389,7 @@ public:
 	}
 
 	UFUNCTION(Blueprintcallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
-		static void MakeAccusation_Server(UObject* WorldContextObj)
+		static void MakeAccusation_Server(UObject* WorldContextObj, int RoleID, FString CWeaponID, FString CRoleID, FString CRoomID)
 	{
 		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
 
@@ -371,7 +407,7 @@ public:
 
 			if (TurnBasedGameModeComp)
 			{
-				TurnBasedGameModeComp->OnPlayerMakeAccusation();
+				TurnBasedGameModeComp->OnPlayerMakeAccusation(RoleID, CWeaponID, CRoleID, CRoomID);
 			}
 		}
 
@@ -403,7 +439,7 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Gamplay API", meta = (WorldContext = "WorldContextObj"))
-		static void MakeSuggestion_Server(UObject* WorldContextObj)
+		static void MakeSuggestion_Server(UObject* WorldContextObj, int RoleID, FString CWeaponID, FString CRoleID, FString CRoomID)
 	{
 		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
 
@@ -421,7 +457,7 @@ public:
 
 			if (TurnBasedGameModeComp)
 			{
-				TurnBasedGameModeComp->OnPlayerMakeSuggestion();
+				TurnBasedGameModeComp->OnPlayerMakeSuggestion(RoleID, CWeaponID, CRoleID, CRoomID);
 			}
 		}
 

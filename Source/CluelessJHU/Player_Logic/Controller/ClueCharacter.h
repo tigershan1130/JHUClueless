@@ -132,15 +132,15 @@ public:
 	* @brief Driver: client send message to server to make a suggestion
 	*/
 	UFUNCTION(Blueprintcallable, Reliable, Server)
-		void ServerRPCMakeSuggestion(int CWeaponID, int CRoleID, int CRoomID);
-	void ServerRPCMakeSuggestion_Implementation(int CWeaponID, int CRoleID, int CRoomID);
+		void ServerRPCMakeSuggestion(const FString& CWeaponID, const FString& CRoleID, const FString& CRoomID);
+	void ServerRPCMakeSuggestion_Implementation(const FString& CWeaponID, const FString& CRoleID, const FString& CRoomID);
 
 	/**
 	* @brief Driver: client send mssage to server to make an accusation
 	*/
 	UFUNCTION(BlueprintCallable, Reliable, Server)
-		void ServerRPCMakeAccusation(int CWeaponID, int CRoleID, int CRoomID);
-	void ServerRPCMakeAccusation_Implementation(int CWeaponID, int CRoleID, int CRoomID);
+		void ServerRPCMakeAccusation(const FString& CWeaponID, const FString& CRoleID, const FString& CRoomID);
+	void ServerRPCMakeAccusation_Implementation(const FString& CWeaponID, const FString& CRoleID, const FString& CRoomID);
 
 	/*
 	* @brief Driver: client send message to server to end his/her current turn.
@@ -153,16 +153,74 @@ public:
 
 	// ======================= UNIT TESTS(DRIVERS) ============================
 	UFUNCTION(Exec)
-		void FunctionTestMakeAccusation(int WeaponID, int RoleID, int RoomID)
+		void FunctionTestMakeAccusationByID(FString WeaponID, FString RoleID, FString RoomID)
 	{
 		ServerRPCMakeAccusation(WeaponID, RoleID, RoomID);
 	}
 
 	UFUNCTION(Exec)
-		void FunctionTestMakeSuggestion(int WeaponID, int RoleID, int RoomID)
+		void FunctionTestMakeSuggestionByID(FString WeaponID, FString RoleID, FString RoomID)
 	{
 		ServerRPCMakeSuggestion(WeaponID, RoleID, RoomID);
 	}
+
+	UFUNCTION(Exec)
+		void FunctionTestMakeAccusationByName(FString Suspect, FString Weapon, FString Location)
+	{
+		ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
+
+		FString WeaponID;
+		FString RoleID;
+		FString RoomID;
+
+		if (GameState)
+		{
+			TArray<FCardEntityData> SetupCards = GameState->GetCardsSetupData();
+			
+			for (auto& Entry : SetupCards)
+			{
+				if (Entry.CardName.ToString() == Suspect)
+					RoleID = Entry.CardID;
+				if (Entry.CardName.ToString() == Weapon)
+					WeaponID = Entry.CardID;
+				if (Entry.CardName.ToString() == Location)
+					RoomID = Entry.CardID;
+			}
+
+		}
+
+		ServerRPCMakeAccusation(WeaponID, RoleID, RoomID);
+	}
+
+	UFUNCTION(Exec)
+		void FunctionTestMakeSuggestionByName(FString Suspect, FString Weapon, FString Location)
+	{
+		ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
+
+		FString WeaponID;
+		FString RoleID;
+		FString RoomID;
+
+		if (GameState)
+		{
+			TArray<FCardEntityData> SetupCards = GameState->GetCardsSetupData();
+
+			for (auto& Entry : SetupCards)
+			{
+				if (Entry.CardName.ToString() == Suspect)
+					RoleID = Entry.CardID;
+				if (Entry.CardName.ToString() == Weapon)
+					WeaponID = Entry.CardID;
+				if (Entry.CardName.ToString() == Location)
+					RoomID = Entry.CardID;
+			}
+
+		}
+
+		ServerRPCMakeSuggestion(WeaponID, RoleID, RoomID);
+	}
+
+
 
 	UFUNCTION(Exec)
 		void FunctionTestMakeMovement(int BlockID)

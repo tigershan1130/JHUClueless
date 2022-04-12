@@ -7,10 +7,9 @@
 #include "CluelessJHU/Player_Logic/Controller/ClueCharacter.h"
 #include "CluelessJHU/Game_Logic/Controller/ClueGameTurnBasedComponent.h"
 #include "CluelessJHU/Utilities/GameplayAPI.h"
+#include "CluelessJHU/Data/Game_StaticData.h"
 #include "StaticDataTableManager/Public/StaticDataSubSystem.h"
 #include <Runtime/Engine/Classes/Kismet/GameplayStatics.h>
-
-
 
 ACGameStateBase::ACGameStateBase()
 {
@@ -171,6 +170,8 @@ void ACGameStateBase::UpdatePlayerControllerWithCharacterOnServer(APlayerControl
 }
 
 // Refresh Turn Index.
+// When refresh turn index, also set player's game action
+// WHen Actions are set, we should toggle different GUI Options.(TODO)
 void ACGameStateBase::RefreshTurnIndex()
 {
 	TArray<AClueless_PlayerState*> ActivePlayerStates = UGameplayAPI::GetActivePlayerStates(GetWorld());
@@ -180,10 +181,22 @@ void ACGameStateBase::RefreshTurnIndex()
 	for (auto& Entry : ActivePlayerStates)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("Role ID %d, CurrentPlayerID: %d"), Entry->GetRoleID(), CurrentPlayerStaticData.ID);
-		if (Entry->GetRoleID() == CurrentPlayerStaticData.ID-1)		
-			Entry->SetGameAction(7);		
-		else		
-			Entry->SetGameAction(-1);		
+		if (Entry->GetRoleID() == CurrentPlayerStaticData.ID - 1)
+		{
+			FStaticMovementBlock StaticMovementBlockInfo = UGameplayAPI::GetBlockInfo(Entry->GetBlockID(), GetWorld());
+
+			if(!StaticMovementBlockInfo.IsHallWay && (!StaticMovementBlockInfo.IsSpawnPoint))
+			{ 
+				Entry->SetAllowGameAction(EPlayerGameAction::Suggestion);
+			}
+			Entry->SetAllowGameAction(EPlayerGameAction::Movement);
+			Entry->SetAllowGameAction(EPlayerGameAction::Accusation);
+			
+		}
+		else
+		{
+			Entry->ClearAllGameAction();
+		}
 	}
 	
 }

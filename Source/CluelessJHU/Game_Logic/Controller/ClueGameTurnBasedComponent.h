@@ -33,11 +33,11 @@ public:
 
 	// This function will make player make an accusation
 	UFUNCTION()
-		void OnPlayerMakeAccusation();
+		void OnPlayerMakeAccusation(int RoleID, FString CWeaponID, FString CRoleID, FString CRoomID);
 
 	// This function will make player to make a suggestion
 	UFUNCTION()
-		void OnPlayerMakeSuggestion();
+		void OnPlayerMakeSuggestion(int RoleID, FString CWeaponID, FString CRoleID, FString CRoomID);
 
 	// this function will make player end turn
 	UFUNCTION()

@@ -13,6 +13,7 @@
  *
  */
 
+
 UCLASS(BlueprintType, Blueprintable, notplaceable)
 class CLUELESSJHU_API AClueless_PlayerState : public APlayerState
 {
@@ -59,14 +60,47 @@ public:
 	}
 
 
+	//#define TEST_BIT(Bitmask, Bit) (((Bitmask) & (1 << static_cast<uint8>(Bit))) > 0)
+	//#define SET_BIT(Bitmask, Bit) (Bitmask |= 1 << static_cast<uint8>(Bit))
+	//#define CLEAR_BIT(Bitmask, Bit) (Bitmask &= ~(1 << static_cast<uint8>(Bit)))
+
 	UFUNCTION()
-		void SetGameAction(int Action)
+		void SetAllowGameAction(EPlayerGameAction Action)
 	{
-		CurrentGameAction = Action;
+		CurrentGameAction |= 1 << static_cast<uint8>(Action);
 
 		// for special case of listen server
 		if (GetNetMode() == ENetMode::NM_ListenServer)
 			OnRep_GameActionChanged();
+	}
+
+	UFUNCTION()
+		bool IsActionAllowed(EPlayerGameAction Action)
+	{
+		return (CurrentGameAction & (1 << static_cast<uint8>(Action))) > 0;
+	}
+
+	UFUNCTION()
+		void ClearGameAction(EPlayerGameAction Action)
+	{
+		CurrentGameAction &= ~(1 << static_cast<uint8>(Action));
+
+		// for special case of listen server
+		if (GetNetMode() == ENetMode::NM_ListenServer)
+			OnRep_GameActionChanged();
+	}
+
+	UFUNCTION()
+		void ClearAllGameAction()
+	{
+		if (CurrentGameAction != 0)
+		{
+			CurrentGameAction = 0;
+
+			// for special case of listen server
+			if (GetNetMode() == ENetMode::NM_ListenServer)
+				OnRep_GameActionChanged();
+		}
 	}
 
 	UFUNCTION()
@@ -135,7 +169,7 @@ protected:
 	 * or should we wait for other's players turn.
 	*/
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_GameActionChanged)
-		int CurrentGameAction; 
+		uint8 CurrentGameAction; 
 
 
 	/**

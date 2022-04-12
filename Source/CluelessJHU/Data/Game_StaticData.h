@@ -11,6 +11,17 @@
 /**
  *
  */
+UENUM(BlueprintType, meta = (Bitflags))
+enum class EPlayerGameAction : uint8
+{
+	None = 0x00,
+	Movement = 0x01,
+	Accusation = 0x02,
+	Suggestion = 0x04
+};
+
+ENUM_CLASS_FLAGS(EPlayerGameAction);
+
 USTRUCT(BlueprintType, Blueprintable)
 struct FPlayerSetupStaticData : public FTableRowBase
 {
@@ -71,6 +82,10 @@ public:
 	// card name if needed.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FText CardName;
+
+	// this is same ID as the RowName
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FString CardID;
 
 	// card description if needed
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

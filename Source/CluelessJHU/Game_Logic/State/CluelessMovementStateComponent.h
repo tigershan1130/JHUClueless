@@ -114,6 +114,9 @@ public:
 		void ServerUpdateOccupied(int BlockID, int PreviousBlockID, int RoleID);
 
 	UFUNCTION()
+		TArray<FStaticMovementBlock> GetStaticMovementCache();
+
+	UFUNCTION()
 		FDynamicMovementEntry GetMovementBlock(int BlockID)
 	{
 		TArray<FDynamicMovementEntry> DynamicMovementEntry = GetDynamicMovmentCache();
@@ -146,5 +149,8 @@ private:
 
 	UPROPERTY(ReplicatedUsing = OnRep_DynamicMovementInfoChanged)
 	FDynamicMovementInfoContainer DynamicMovementInfo;
+
+	UPROPERTY()
+		TArray<FStaticMovementBlock> StaticMovementInfocache;
 
 };

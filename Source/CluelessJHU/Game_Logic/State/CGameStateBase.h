@@ -112,6 +112,12 @@ public:
 		void SetupCards(TArray<FCardEntityData> MurderCards, TArray<FCardEntityData> LeftoverCards)
 	{
 		MurderDeck = MurderCards;
+
+		for (auto& Entry : MurderCards)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Murder Deck: %s"), *(Entry.CardName.ToString()));
+		}
+
 		LeftoverDeck = LeftoverCards;
 	}
 
@@ -121,6 +127,13 @@ public:
 	UFUNCTION()
 		void ChangeGameState(ClueGameState CurrentGameState);
 
+	// Called by server only.
+	// Only server have murder deck info, 
+	UFUNCTION()
+		TArray<FCardEntityData> GetMurderDeck()
+	{
+		return MurderDeck;
+	}
 
 	UFUNCTION()
 		void ChangeToNextTurnIndex();
@@ -167,6 +180,8 @@ public:
 	// get player Setup Data
 	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
 		TArray<FPlayerSetupStaticData>  GetPlayerSetupStaticData();
+
+
 #pragma endregion for Both server and client
 protected:
 

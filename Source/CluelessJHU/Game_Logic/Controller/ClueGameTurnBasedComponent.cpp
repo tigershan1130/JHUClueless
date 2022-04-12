@@ -89,6 +89,9 @@ void UClueGameTurnBasedComponent::OnGameInit()
 	int MurderCharIndex = FMath::RandRange(0, CharacterCards.Num()-1);
 	int MurderRoomIndex = FMath::RandRange(0, RoomCards.Num()-1);
 
+	MurderDeck.Add(WeaponCards[MurderWeaponIndex]);
+	MurderDeck.Add(CharacterCards[MurderCharIndex]);
+	MurderDeck.Add(RoomCards[MurderRoomIndex]);
 
 	// Remove Murder Cards from initial stack.
 	WeaponCards.RemoveAt(MurderWeaponIndex);
@@ -163,16 +166,59 @@ void UClueGameTurnBasedComponent::OnGameInit()
 }
 
 
-void UClueGameTurnBasedComponent::OnPlayerMakeAccusation()
+void UClueGameTurnBasedComponent::OnPlayerMakeAccusation(int RoleID, FString CWeaponID, FString CRoleID, FString CRoomID)
 {
-	print("[Server: CluelessGameLogic] TODO: Check Accusation Cards->Player Status Adjustment", FColor::Red);
+	ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
+
+	if (GameState == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[CluelessGameLogic] Can't Find GameState"));
+		return;
+	}
+
+	TArray<FCardEntityData> MurderDeck = GameState->GetMurderDeck();
+
+	// go through our murder deck to check our cards
+	int CorrectCounter = 0;
+	for (int i = 0; i < MurderDeck.Num(); i++)
+	{
+		if (MurderDeck[i].CardID == CRoleID)
+		{
+			CorrectCounter++;
+		}
+		if(MurderDeck[i].CardID == CWeaponID)
+		{
+			CorrectCounter++;
+		}
+		if (MurderDeck[i].CardID == CRoomID)
+		{
+			CorrectCounter++;
+		}
+	}
+
+	if (CorrectCounter >= 3)
+	{
+		print("[Server: CluelessGameLogic] Player Made Correct Accusation", FColor::Green);
+
+		print("[Server: CluelessGameLogic] Notifies all Clients, Game Won!", FColor::Green);
+	}
+	else
+	{
+		print("[Server: CluelessGameLogic] Player Made False Accusation", FColor::Green);
+
+		print("[Server: CluelessGameLogic] Marking Player As Audience(Move,EndTurns)", FColor::Green);
+	}
+
+	
 
 	
 }
 
-void UClueGameTurnBasedComponent::OnPlayerMakeSuggestion()
+void UClueGameTurnBasedComponent::OnPlayerMakeSuggestion(int RoleID, FString CWeaponID, FString CRoleID, FString CRoomID)
 {
-	print("[Server: CluelessGameLogic] TODO: check Player Suggestion", FColor::Red);
+	FString DebugText = "[Server: CluelessGameLogic] IMPLEMENTING: Player making suggestion: [" + CWeaponID + "," + CRoleID + "," + CRoomID + "]";
+
+	print(DebugText, FColor::Yellow);
 
 }
 

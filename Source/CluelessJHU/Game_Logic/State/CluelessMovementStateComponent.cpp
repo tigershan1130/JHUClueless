@@ -38,6 +38,24 @@ TArray<int> UCluelessMovementStateComponent::GetMovableBlocks(int CurrentBlockID
 	return TArray<int>();
 }
 
+TArray<FStaticMovementBlock> UCluelessMovementStateComponent::GetStaticMovementCache()
+{
+	if (StaticMovementInfocache.Num() <= 0)
+	{
+		UDataTable* MovementSetupStaticData = UStaticDataSubSystem::GetDataTableByName(TEXT("MovementSetup"));
+
+		FString _Context;
+
+		for (auto& RowName : MovementSetupStaticData->GetRowNames())
+		{
+			FStaticMovementBlock* RowData = MovementSetupStaticData->FindRow<FStaticMovementBlock>(RowName, _Context);
+			StaticMovementInfocache.Add(*RowData);
+		}
+	}
+
+	return StaticMovementInfocache;
+}
+
 // Get CluelessMovement Data
 TArray<FDynamicMovementEntry> UCluelessMovementStateComponent::GetDynamicMovmentCache()
 {
