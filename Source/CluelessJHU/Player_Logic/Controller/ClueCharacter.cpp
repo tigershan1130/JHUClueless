@@ -113,77 +113,77 @@ void AClueCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 }
 
-void AClueCharacter::InitClientVisualCharacter(int RoleID)
-{
-	if (GIsServer && GetNetMode() != ENetMode::NM_ListenServer)
-		return;
-
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACPawn::StaticClass(), FoundActors);
-
-	for (int i = 0; i < FoundActors.Num(); i++)
-	{
-		ACPawn* CurrentCharacter = (ACPawn*)FoundActors[i];
-		if (RoleID == CurrentCharacter->RoleID)
-			ClientControlledVisualActor = CurrentCharacter;
-	}
-
-	if (ClientBlockPoints.Num() <= 0)
-	{
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABlockPointActor::StaticClass(), FoundActors);
-
-		for (int i = 0; i < FoundActors.Num(); i++)
-		{
-			ABlockPointActor* BlockPoint = (ABlockPointActor*)FoundActors[i];
-			if (BlockPoint)
-				ClientBlockPoints.Add(BlockPoint);
-		}
-	}
-}
-
-void AClueCharacter::SetVisualPawnToBlock(int BlockID, int RoleID)
-{
-	if (ClientBlockPoints.Num() <= 0)
-	{
-		TArray<AActor*> FoundActors;
-
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABlockPointActor::StaticClass(), FoundActors);
-
-		for (int i = 0; i < FoundActors.Num(); i++)
-		{
-			ABlockPointActor* BlockPoint = (ABlockPointActor*)FoundActors[i];
-			if (BlockPoint)
-				ClientBlockPoints.Add(BlockPoint);
-		}
-	}
-
-	if (ClientControlledVisualActor == nullptr)
-	{
-		TArray<AActor*> FoundActors;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACPawn::StaticClass(), FoundActors);
-
-		for (int i = 0; i < FoundActors.Num(); i++)
-		{
-			ACPawn* CurrentCharacter = (ACPawn*)FoundActors[i];
-			if (RoleID == CurrentCharacter->RoleID)
-				ClientControlledVisualActor = CurrentCharacter;
-		}
-	}
-
-	ABlockPointActor* FoundBlock = nullptr;
-
-	for (int i = 0; i < ClientBlockPoints.Num(); i++)
-	{
-		if (ClientBlockPoints[i]->BlockID == BlockID)
-			FoundBlock = ClientBlockPoints[i];
-
-	}
-
-	if (FoundBlock && ClientControlledVisualActor != nullptr)
-	{
-		// TODO: move current Visual Character to Block Location
-		ClientControlledVisualActor->SetActorLocation(FoundBlock->GetActorLocation());
-	}
-
-}
+//void AClueCharacter::InitClientVisualCharacter(int RoleID)
+//{
+//	if (GIsServer && GetNetMode() != ENetMode::NM_ListenServer)
+//		return;
+//
+//	TArray<AActor*> FoundActors;
+//	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACPawn::StaticClass(), FoundActors);
+//
+//	for (int i = 0; i < FoundActors.Num(); i++)
+//	{
+//		ACPawn* CurrentCharacter = (ACPawn*)FoundActors[i];
+//		if (RoleID == CurrentCharacter->RoleID)
+//			ClientControlledVisualActor = CurrentCharacter;
+//	}
+//
+//	if (ClientBlockPoints.Num() <= 0)
+//	{
+//		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABlockPointActor::StaticClass(), FoundActors);
+//
+//		for (int i = 0; i < FoundActors.Num(); i++)
+//		{
+//			ABlockPointActor* BlockPoint = (ABlockPointActor*)FoundActors[i];
+//			if (BlockPoint)
+//				ClientBlockPoints.Add(BlockPoint);
+//		}
+//	}
+//}
+//
+//void AClueCharacter::SetVisualPawnToBlock(int BlockID, int RoleID)
+//{
+//	if (ClientBlockPoints.Num() <= 0)
+//	{
+//		TArray<AActor*> FoundActors;
+//
+//		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABlockPointActor::StaticClass(), FoundActors);
+//
+//		for (int i = 0; i < FoundActors.Num(); i++)
+//		{
+//			ABlockPointActor* BlockPoint = (ABlockPointActor*)FoundActors[i];
+//			if (BlockPoint)
+//				ClientBlockPoints.Add(BlockPoint);
+//		}
+//	}
+//
+//	if (ClientControlledVisualActor == nullptr)
+//	{
+//		TArray<AActor*> FoundActors;
+//		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACPawn::StaticClass(), FoundActors);
+//
+//		for (int i = 0; i < FoundActors.Num(); i++)
+//		{
+//			ACPawn* CurrentCharacter = (ACPawn*)FoundActors[i];
+//			if (RoleID == CurrentCharacter->RoleID)
+//				ClientControlledVisualActor = CurrentCharacter;
+//		}
+//	}
+//
+//	ABlockPointActor* FoundBlock = nullptr;
+//
+//	for (int i = 0; i < ClientBlockPoints.Num(); i++)
+//	{
+//		if (ClientBlockPoints[i]->BlockID == BlockID)
+//			FoundBlock = ClientBlockPoints[i];
+//
+//	}
+//
+//	if (FoundBlock && ClientControlledVisualActor != nullptr)
+//	{
+//		// TODO: move current Visual Character to Block Location
+//		ClientControlledVisualActor->SetActorLocation(FoundBlock->GetActorLocation());
+//	}
+//
+//}
 

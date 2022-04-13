@@ -42,8 +42,8 @@ public:
 	UFUNCTION()
 		virtual void OnRep_CardsDistributed();
 
-	UFUNCTION()
-		virtual void OnRep_BlockChanged();
+	//UFUNCTION()
+	//	virtual void OnRep_BlockChanged();
 
 #pragma endregion Recieves message from server, these states have changed.
 
@@ -130,22 +130,6 @@ public:
 		RoleID = ID;
 	}
 
-	UFUNCTION()
-		void SetBlockID(int BlockID)
-	{
-		CurrentBlockID = BlockID;
-
-		// for special case of listen server
-		if (GetNetMode() == ENetMode::NM_ListenServer)
-			OnRep_BlockChanged();
-	}
-
-	UFUNCTION()
-		int GetBlockID()
-	{
-		return CurrentBlockID;
-	}
-
 #pragma endregion Server Functions
 
 protected:
@@ -183,12 +167,5 @@ protected:
 	*/
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_CardsDistributed)
 		TArray<FCardEntityData> HandCards;
-
-	/*
-	* @brief Current Location of the Player
-	*/
-	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_BlockChanged)
-		int CurrentBlockID;
-
 	
 };

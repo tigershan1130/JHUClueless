@@ -17,7 +17,9 @@ enum class EPlayerGameAction : uint8
 	None = 0x00,
 	Movement = 0x01,
 	Accusation = 0x02,
-	Suggestion = 0x04
+	Suggestion = 0x04,
+	ShowCard = 0x08,
+	SkipShowCard = 0x10,
 };
 
 ENUM_CLASS_FLAGS(EPlayerGameAction);
@@ -31,6 +33,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int ID;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FName CharacterID;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FText CharacterName;

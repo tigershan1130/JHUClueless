@@ -183,7 +183,9 @@ void ACGameStateBase::RefreshTurnIndex()
 		//UE_LOG(LogTemp, Warning, TEXT("Role ID %d, CurrentPlayerID: %d"), Entry->GetRoleID(), CurrentPlayerStaticData.ID);
 		if (Entry->GetRoleID() == CurrentPlayerStaticData.ID - 1)
 		{
-			FStaticMovementBlock StaticMovementBlockInfo = UGameplayAPI::GetBlockInfo(Entry->GetBlockID(), GetWorld());
+			int BlockID = UGameplayAPI::GetBlockIDFromRoleID(Entry->GetRoleID(), GetWorld());
+
+			FStaticMovementBlock StaticMovementBlockInfo = UGameplayAPI::GetBlockInfo(BlockID, GetWorld());
 
 			if(!StaticMovementBlockInfo.IsHallWay && (!StaticMovementBlockInfo.IsSpawnPoint))
 			{ 

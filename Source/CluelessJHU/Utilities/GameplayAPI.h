@@ -25,7 +25,7 @@ public:
 
 #pragma region Server and Client calls
 	/*
-	*
+	* Get Static Block Info From Datatable by passing in BlockID
 	*/
 	UFUNCTION(BlueprintCallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
 		static FStaticMovementBlock GetBlockInfo(int BlockID, UObject* WorldContextObj)
@@ -60,6 +60,56 @@ public:
 		return FoundBlock;
 	}
 
+
+	UFUNCTION(BlueprintCallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
+		static int GetBlockIDFromRoleID(int RoleID, UObject* WorldContextObj)
+	{
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return -1;
+
+		UCluelessMovementStateComponent* CluelessMovementStateCompCache = (UCluelessMovementStateComponent*)(GameState->GetComponentByClass(UCluelessMovementStateComponent::StaticClass()));
+
+		if (!CluelessMovementStateCompCache)		
+			return -1;
+
+
+		return CluelessMovementStateCompCache->GetBlockIDFromRoleID(RoleID);
+	}
+
+
+	/*
+	* Get Static Card Info From Dattable by passing in CardID
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
+		static FCardEntityData GetCardStaticData(FString CardID, UObject* WorldContextObj)
+	{
+		FCardEntityData CardData;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return CardData;
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		TArray<FCardEntityData> SetupCards = GameState->GetCardsSetupData();
+
+		for (auto& Entry : SetupCards)
+		{
+			if (Entry.CardID == CardID)
+			{
+				CardData = Entry;
+			}
+		}
+
+		return CardData;
+	}
+
+
 	/*
 	Get current role data for both client and server
 	*/
@@ -83,13 +133,51 @@ public:
 
 		TArray<FPlayerSetupStaticData> PlayerStaticSetupData = GetPlayerStaticSetupData(World);
 
-
 		RoleID = FMath::Clamp(RoleID, 0, PlayerStaticSetupData.Num() - 1);
 
 
 		RoleEntry = PlayerStaticSetupData[RoleID];
 
 		return RoleEntry;
+	}
+
+
+	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
+		static APlayerState* FindPlayerFromCharacterID(FName CharacterID, UObject* WorldContextObj)
+	{
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return nullptr;
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return nullptr;
+
+		TArray<FPlayerSetupStaticData> PlayerStaticSetupData = GetPlayerStaticSetupData(World);
+
+		int FoundIndex = -1;
+		for (int i = 0; i < PlayerStaticSetupData.Num(); i++)
+		{
+			if (PlayerStaticSetupData[i].CharacterID == CharacterID)
+			{
+				FoundIndex = i;
+			}
+		}
+
+		if (FoundIndex == -1)
+			return nullptr;
+
+		TArray<AClueless_PlayerState*> CPlayerStates = GetActivePlayerStates(World);
+
+		for (auto& Entry : CPlayerStates)
+		{
+			if (Entry->GetRoleID() == FoundIndex)
+				return Entry;
+		}
+
+		return nullptr;
 	}
 
 
@@ -241,7 +329,7 @@ public:
 	}
 
 	/**
-	* @brief Get Role Location
+	* @brief Get Role Location client and server
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
 		static ACharacter* GetCharacterFromRoleID(UObject* WorldContextObj, int RoleID)

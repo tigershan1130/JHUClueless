@@ -25,7 +25,6 @@ void AClueless_PlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	DOREPLIFETIME(AClueless_PlayerState, CurrentPlayerState);
 	DOREPLIFETIME(AClueless_PlayerState, RoleID);
 	DOREPLIFETIME(AClueless_PlayerState, CurrentControlledPawn);
-	DOREPLIFETIME(AClueless_PlayerState, CurrentBlockID);
 	DOREPLIFETIME(AClueless_PlayerState, CurrentGameAction);
 	//TODO: FIx bug, currently all players cards all send to each of the clients
 	// So technically this can be send to other players, so we only need to rep_notify to owner.
@@ -48,10 +47,10 @@ void AClueless_PlayerState::OnRep_RoleID()
 
 
 
-	AClueCharacter* CurrentControlledCharacter = (AClueCharacter*)CurrentControlledPawn;
+	//AClueCharacter* CurrentControlledCharacter = (AClueCharacter*)CurrentControlledPawn;
 
-	if (CurrentControlledCharacter)
-		CurrentControlledCharacter->InitClientVisualCharacter(RoleID);
+	//if (CurrentControlledCharacter)
+	//	CurrentControlledCharacter->InitClientVisualCharacter(RoleID);
 
 }
 
@@ -82,18 +81,6 @@ void AClueless_PlayerState::OnRep_CardsDistributed()
 	}
 }
 
-void AClueless_PlayerState::OnRep_BlockChanged()
-{
-	if (CurrentControlledPawn != nullptr)
-	{
-		AClueCharacter* Character = (AClueCharacter*)CurrentControlledPawn;
-
-		if (Character != nullptr)
-			Character->SetVisualPawnToBlock(GetBlockID(), RoleID);
-	}
-
-
-}
 
 void AClueless_PlayerState::SetCardsInHand(TArray<FCardEntityData> CardsForThisPlayer)
 {

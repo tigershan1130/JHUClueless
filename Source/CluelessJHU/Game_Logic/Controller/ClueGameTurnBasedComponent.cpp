@@ -148,21 +148,6 @@ void UClueGameTurnBasedComponent::OnGameInit()
 		if (PlayerHands.Contains(i))
 			ActivePlayerStates[i]->SetCardsInHand(PlayerHands[i]);
 	}
-
-	// Spawn Player Character
-	print("[Server: CluelessGameLogic] Set Player Character Initial Block and Location", FColor::Green);
-	
-	for (int i = 0; i < ActivePlayerStates.Num(); i++)
-	{
-		// Get current Player Data
-		FPlayerSetupStaticData PlayerSetupData = UGameplayAPI::GetCurrentRoleData(ActivePlayerStates[i]->GetRoleID(), GetWorld());
-
-		ActivePlayerStates[i]->SetBlockID(PlayerSetupData.InitialBlockID);
-
-		UE_LOG(LogTemp, Warning, TEXT("Set Role ID %d to Block ID %d"), ActivePlayerStates[i]->GetRoleID(), ActivePlayerStates[i]->GetBlockID());
-	}
-
-	
 }
 
 
@@ -196,6 +181,8 @@ void UClueGameTurnBasedComponent::OnPlayerMakeAccusation(int RoleID, FString CWe
 		}
 	}
 
+	//TODO: make current role clear accusation action
+
 	if (CorrectCounter >= 3)
 	{
 		print("[Server: CluelessGameLogic] Player Made Correct Accusation", FColor::Green);
@@ -216,9 +203,60 @@ void UClueGameTurnBasedComponent::OnPlayerMakeAccusation(int RoleID, FString CWe
 
 void UClueGameTurnBasedComponent::OnPlayerMakeSuggestion(int RoleID, FString CWeaponID, FString CRoleID, FString CRoomID)
 {
-	FString DebugText = "[Server: CluelessGameLogic] IMPLEMENTING: Player making suggestion: [" + CWeaponID + "," + CRoleID + "," + CRoomID + "]";
+	FString DebugText = "[Server: CluelessGameLogic] Player making suggestion: [" + CWeaponID + "," + CRoleID + "," + CRoomID + "]";
 
-	print(DebugText, FColor::Yellow);
+	print(DebugText, FColor::Green);
+
+	// Check if Current role is actually inside a room before he or she can make a suggestion
+    ACharacter* SuggestionInstigator = UGameplayAPI::GetCharacterFromRoleID(GetWorld(), RoleID);
+
+	AClueless_PlayerState* CPlayerState = SuggestionInstigator->GetPlayerState<AClueless_PlayerState>();
+
+	int CPlayerBlockID = UGameplayAPI::GetBlockIDFromRoleID(CPlayerState->GetRoleID(), GetWorld());
+
+	if (CPlayerBlockID == -1)
+	{
+		print("[Server: CluelessGameLogic] Player Location Not Valid", FColor::Red);
+		return;
+	}
+
+	FStaticMovementBlock MovementStaticInfo = UGameplayAPI::GetBlockInfo(CPlayerBlockID, GetWorld());
+
+	if (!MovementStaticInfo.IsHallWay && (!MovementStaticInfo.IsSpawnPoint))
+	{
+		print("[Server: CluelessGameLogic] Player Location Valid, Next Move Suspect into This Block", FColor::Green);
+	}
+	else
+	{
+		print("[Server: CluelessGameLogic] Player Location Not Valid", FColor::Red);
+		return;
+	}
+
+	FCardEntityData CardStaticInfo = UGameplayAPI::GetCardStaticData(CRoleID, GetWorld());
+
+	AClueless_PlayerState* SuspectPlayerState = (AClueless_PlayerState*)UGameplayAPI::FindPlayerFromCharacterID(CardStaticInfo.RelationID, GetWorld());
+	
+	if (SuspectPlayerState == nullptr)
+	{
+		print("[Server: CluelessGameLogic] Suspect Can't be Found", FColor::Red);
+		return;
+	}
+	else
+	{
+		print("[Server: CluelessGameLogic] Suspect Found Move player to Location", FColor::Green);
+
+
+	}
+
+
+
+	// Making suggestion move suggested character into this room.
+
+	// TODO: Make current role clear suggestion action
+
+	// In Order to make show card logic.
+	// 1. we need a replication variable called ShowCardPlayerTurnIndex(This will continue go up until somebody shows a suggested card or  our ShowCardPlayerIndex becomes the same player turn index again)
+	// 2. As each turn changes, other players will need to select a card to show, or no cards then skip suggestion // need to add those two to game actions...
 
 }
 

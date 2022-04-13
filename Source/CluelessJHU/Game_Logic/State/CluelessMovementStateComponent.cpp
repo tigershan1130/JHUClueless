@@ -4,6 +4,8 @@
 #include "CluelessMovementStateComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "StaticDataTableManager/Public/StaticDataSubSystem.h"
+#include "CluelessJHU/Graphical_API/BlockPointActor.h"
+#include "CluelessJHU/Player_Logic/Controller/CPawn.h"
 #include <Runtime/Engine/Classes/Kismet/GameplayStatics.h>
 
 // Sets default values for this component's properties
@@ -97,7 +99,7 @@ TArray<FDynamicMovementEntry> UCluelessMovementStateComponent::GetDynamicMovment
 	return DynamicMovementInfo.DynamicMovementInfoCache;
 }
 
-void UCluelessMovementStateComponent::ServerUpdateOccupied(int BlockID, int PreviousBlockID, int RoleID)
+void UCluelessMovementStateComponent::ServerUpdateOccupied(int BlockID, int RoleID)
 {
 	bool Changed = false;
 	for (auto& Entry : DynamicMovementInfo.DynamicMovementInfoCache)
@@ -109,8 +111,7 @@ void UCluelessMovementStateComponent::ServerUpdateOccupied(int BlockID, int Prev
 
 			Changed = true;
 		}
-
-		if (Entry.BlockID == RoleID)
+		else
 		{
 			if (Entry.OccupiedRoles.Contains(RoleID))
 				Entry.OccupiedRoles.Remove(RoleID);
@@ -135,6 +136,51 @@ void UCluelessMovementStateComponent::ServerUpdateOccupied(int BlockID, int Prev
 
 void UCluelessMovementStateComponent::OnRep_DynamicMovementInfoChanged()
 {
-	
+	// TODO: we need to upgrade our graphical from here.
+	if (GIsServer && GetNetMode() != ENetMode::NM_ListenServer)
+		return;
+
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACPawn::StaticClass(), FoundActors);
+
+	TMap<int, ACPawn*> VisualPawns;
+	TMap<int, ABlockPointActor*> ClientBlockPoints;
+
+	for (int i = 0; i < FoundActors.Num(); i++)
+	{
+		ACPawn* CurrentCharacter = (ACPawn*)FoundActors[i];
+
+		if(!VisualPawns.Contains(CurrentCharacter->RoleID))
+			VisualPawns.Add(CurrentCharacter->RoleID,CurrentCharacter);
+	}
+
+	if (ClientBlockPoints.Num() <= 0)
+	{
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABlockPointActor::StaticClass(), FoundActors);
+
+		for (int i = 0; i < FoundActors.Num(); i++)
+		{
+			ABlockPointActor* BlockPoint = (ABlockPointActor*)FoundActors[i];
+			if (BlockPoint)
+			{
+				if(!ClientBlockPoints.Contains(BlockPoint->BlockID))
+					ClientBlockPoints.Add(BlockPoint->BlockID, BlockPoint);
+			}
+		}
+	}
+
+	for (auto& Entry : DynamicMovementInfo.DynamicMovementInfoCache)
+	{
+		for (int i = 0; i < Entry.OccupiedRoles.Num(); i++)
+		{
+			int OccupiedRoleID = Entry.OccupiedRoles[i];
+
+			if (VisualPawns.Contains(OccupiedRoleID) && ClientBlockPoints.Contains(Entry.BlockID))
+			{
+				FVector BlockLocation = ClientBlockPoints[Entry.BlockID]->GetActorLocation();
+				VisualPawns[OccupiedRoleID]->SetActorLocation(BlockLocation);
+			}
+		}
+	}
 }
 

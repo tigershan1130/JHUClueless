@@ -26,6 +26,8 @@ public:
 	UFUNCTION()
 		void OnPlayerMakeMovement(int BlockID, int CurrentRoleID);
 
+	UFUNCTION()
+		void RoleMakeTeleport(int BlockID, int RoleID);
 
 
 #pragma endregion Server RPC calls

@@ -111,7 +111,7 @@ public:
 		TArray<FDynamicMovementEntry> GetDynamicMovmentCache();
 
 	UFUNCTION()
-		void ServerUpdateOccupied(int BlockID, int PreviousBlockID, int RoleID);
+		void ServerUpdateOccupied(int BlockID, int RoleID);
 
 	UFUNCTION()
 		TArray<FStaticMovementBlock> GetStaticMovementCache();
@@ -131,6 +131,22 @@ public:
 		}
 
 		return FoundEntry;
+	}
+
+	UFUNCTION()
+		int GetBlockIDFromRoleID(int RoleID)
+	{
+		TArray<FDynamicMovementEntry> MovementBlocks = DynamicMovementInfo.DynamicMovementInfoCache;
+
+		for (auto& Entry : MovementBlocks)
+		{
+			if (Entry.OccupiedRoles.Contains(RoleID))
+			{
+				return Entry.BlockID;
+			}
+		}
+
+		return -1;
 	}
 
 #pragma region Client recieves state change from Server

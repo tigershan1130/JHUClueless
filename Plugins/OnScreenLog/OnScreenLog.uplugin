@@ -1,0 +1,26 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "On Screen Log",
+	"Description": "A simple plugin that can draw the UE4 Output Log to the screen for debugging purposes",
+	"Category": "Other",
+	"CreatedBy": "JustinKiesskalt",
+	"CreatedByURL": "",
+	"DocsURL": "https://docs.google.com/document/d/1dyPsD-q8QH9FBxaNYSOFEEZTUNWquV1WwALvsLmvSU8/edit?usp=sharing",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "OnScreenLog",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [
+				"Win64",
+				"Mac"
+			]
+		}
+	]
+}

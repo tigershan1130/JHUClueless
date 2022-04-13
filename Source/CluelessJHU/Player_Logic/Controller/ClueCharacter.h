@@ -47,17 +47,17 @@ public:
 	// Called to bind functionality to input, This is client only.
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UFUNCTION()
-		void InitClientVisualCharacter(int RoleID);
+	//UFUNCTION()
+	//	void InitClientVisualCharacter(int RoleID);
 
-	UFUNCTION()
-		void SetVisualPawnToBlock(int BlockID, int RoleID);
+	//UFUNCTION()
+	//	void SetVisualPawnToBlock(int BlockID, int RoleID);
 
-	UFUNCTION()
-	ACPawn* GetClientVisualActor()
-	{
-		return ClientControlledVisualActor;
-	}
+	//UFUNCTION()
+	//ACPawn* GetClientVisualActor()
+	//{
+	//	return ClientControlledVisualActor;
+	//}
 
 #pragma region ServerStateChanged
 

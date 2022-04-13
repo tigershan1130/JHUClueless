@@ -32,6 +32,39 @@ void UCluelessMovementComponent::BeginPlay()
 	if (CluelessMovementStateCompCache == nullptr)
 		return;
 	
+	CluelessMovementStateCompCache->GetDynamicMovmentCache();
+
+	TArray<FPlayerSetupStaticData> SetupDatas = UGameplayAPI::GetPlayerStaticSetupData(GetWorld());
+
+	for (auto& Entry : SetupDatas)
+	{
+		int RoleID = Entry.ID - 1;
+
+		CluelessMovementStateCompCache->ServerUpdateOccupied(Entry.InitialBlockID, RoleID);
+
+		UE_LOG(LogTemp, Error, TEXT("Setting up Block ID %d for Role %d"), Entry.InitialBlockID, RoleID);
+	}
+}
+
+
+void UCluelessMovementComponent::RoleMakeTeleport(int BlockID, int CurrentRoleID)
+{
+	if (CluelessMovementStateCompCache == nullptr)
+	{
+		ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return;
+
+		CluelessMovementStateCompCache = (UCluelessMovementStateComponent*)(GameState->GetComponentByClass(UCluelessMovementStateComponent::StaticClass()));
+	}
+
+	if (CluelessMovementStateCompCache == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Invalid Movement State Component"));
+	}
+
+	CluelessMovementStateCompCache->ServerUpdateOccupied(BlockID, CurrentRoleID);
 }
 
 
@@ -66,7 +99,7 @@ void UCluelessMovementComponent::OnPlayerMakeMovement(int BlockID, int CurrentRo
 	if (CurrentPlayerState == nullptr)
 		return;
 
-	int CurrentLocationID = CurrentPlayerState->GetBlockID();
+	int CurrentLocationID = UGameplayAPI::GetBlockIDFromRoleID(CurrentRoleID, GetWorld());
 
 	//UE_LOG(LogTemp, Warning, TEXT("Player %d is Making a move from Block %d to Block %d"), CurrentRoleID, CurrentLocationID, BlockID);
 	FDynamicMovementEntry FromBlock = CluelessMovementStateCompCache->GetMovementBlock(CurrentLocationID);
@@ -77,15 +110,13 @@ void UCluelessMovementComponent::OnPlayerMakeMovement(int BlockID, int CurrentRo
 	// if contains let's make a move
 	if (FromBlock.BlockInfo.NeighborBlocks.Contains(BlockID))
 	{
-		if (FromBlock.OccupiedRoles.Num() > 0 && FromBlock.BlockInfo.IsHallWay == true)
+		if (FoundMoveToBlock.OccupiedRoles.Num() > 0 && FoundMoveToBlock.BlockInfo.IsHallWay == true)
 		{
 			print("[Server: CluelessGameLogic] Player Movement Validated[False] Hall way Full", FColor::Red);
 		}
 		else
-		{
-			CurrentPlayerState->SetBlockID(BlockID);			
-
-			CluelessMovementStateCompCache->ServerUpdateOccupied(BlockID, CurrentLocationID, CurrentRoleID);
+		{	
+			CluelessMovementStateCompCache->ServerUpdateOccupied(BlockID, CurrentRoleID);
 		}
 	}
 	else
