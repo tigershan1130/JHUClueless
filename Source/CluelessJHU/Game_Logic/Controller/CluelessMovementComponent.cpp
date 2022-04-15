@@ -104,13 +104,16 @@ void UCluelessMovementComponent::OnPlayerMakeMovement(int BlockID, int CurrentRo
 	//UE_LOG(LogTemp, Warning, TEXT("Player %d is Making a move from Block %d to Block %d"), CurrentRoleID, CurrentLocationID, BlockID);
 	FDynamicMovementEntry FromBlock = CluelessMovementStateCompCache->GetMovementBlock(CurrentLocationID);
 
-	FString msg = "[Server: CluelessGameLogic]Player " + FString::FromInt(CurrentRoleID) + " Making Move From Block[" + FString::FromInt(CurrentLocationID) + "]["+ FString::FromInt(FromBlock.BlockInfo.BlockID)+ "] To Block[" + FString::FromInt(BlockID) + "]";
+
+	FString msg = "[Server: CluelessGameLogic]Player " + FString::FromInt(CurrentRoleID) + " Making Move From Block[" + FString::FromInt(CurrentLocationID) + "]["+ FString::FromInt(FromBlock.BlockID)+ "] To Block[" + FString::FromInt(BlockID) + "]";
 	print(msg, FColor::Green);
 
+	FStaticMovementBlock FromBlockInfo = UGameplayAPI::GetBlockInfo(FromBlock.BlockID, GetWorld());
+
 	// if contains let's make a move
-	if (FromBlock.BlockInfo.NeighborBlocks.Contains(BlockID))
+	if (FromBlockInfo.NeighborBlocks.Contains(BlockID))
 	{
-		if (FoundMoveToBlock.OccupiedRoles.Num() > 0 && FoundMoveToBlock.BlockInfo.IsHallWay == true)
+		if (FoundMoveToBlock.OccupiedRoles.Num() > 0 && FromBlockInfo.IsHallWay == true)
 		{
 			print("[Server: CluelessGameLogic] Player Movement Validated[False] Hall way Full", FColor::Red);
 		}

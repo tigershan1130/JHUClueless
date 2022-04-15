@@ -23,7 +23,34 @@ class CLUELESSJHU_API UGameplayAPI : public UBlueprintFunctionLibrary
 
 public:
 
-#pragma region Server and Client calls
+#pragma region Server and Client calls	
+	/*Get CardID from block ID using SetupCard Static Data*/
+	UFUNCTION(BlueprintCallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
+		static FString GetCardIDFromBlockID(int BlockID, UObject* WorldContextObj)
+	{
+		FString BlockCardID = "Error";
+
+		FCardEntityData CardData;
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return BlockCardID;
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		TArray<FCardEntityData> SetupCards = GameState->GetCardsSetupData();
+
+		for (auto& Entry : SetupCards)
+		{
+			if (Entry.RelationID.ToString() == FString::FromInt(BlockID))
+			{
+				BlockCardID = Entry.CardID;
+			}
+		}
+
+		return BlockCardID;
+	}
+
 	/*
 	* Get Static Block Info From Datatable by passing in BlockID
 	*/
@@ -60,7 +87,9 @@ public:
 		return FoundBlock;
 	}
 
-
+	/*
+	* Get Block ID from Role ID(meaning which block is the role currently at?)
+	*/
 	UFUNCTION(BlueprintCallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
 		static int GetBlockIDFromRoleID(int RoleID, UObject* WorldContextObj)
 	{
@@ -79,7 +108,6 @@ public:
 
 		return CluelessMovementStateCompCache->GetBlockIDFromRoleID(RoleID);
 	}
-
 
 	/*
 	* Get Static Card Info From Dattable by passing in CardID
@@ -109,6 +137,35 @@ public:
 		return CardData;
 	}
 
+	/*
+	* Get RoleID From Character Relation ID
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
+		static int FindRoleIDFromCharacterID(FName CharacterID, UObject* WorldContextObj)
+	{
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return -1;
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return -1;
+
+		TArray<FPlayerSetupStaticData> PlayerStaticSetupData = GetPlayerStaticSetupData(World);
+
+		int FoundIndex = -1;
+		for (int i = 0; i < PlayerStaticSetupData.Num(); i++)
+		{
+			if (PlayerStaticSetupData[i].CharacterID == CharacterID)
+			{
+				return i;
+			}
+		}
+
+		return -1;
+	}
 
 	/*
 	Get current role data for both client and server
@@ -141,7 +198,11 @@ public:
 		return RoleEntry;
 	}
 
-
+	/*
+	* Find Player State from Character ID, note, this doesn't 100% grantee a sucessful PlayerState is returned
+	* only those who controls the correponsding role ID will be returned
+	* if you only need role ID, you should use FindRoleIDFromCharacterID
+	*/
 	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
 		static APlayerState* FindPlayerFromCharacterID(FName CharacterID, UObject* WorldContextObj)
 	{
@@ -179,7 +240,6 @@ public:
 
 		return nullptr;
 	}
-
 
 	/**
 	* Get Game State, Readonly
@@ -225,7 +285,6 @@ public:
 		return PlayerStaticSetupData;
 	}
 
-
 	/**
 	* @brief For both client and server
 	*/
@@ -241,7 +300,6 @@ public:
 
 		return ActivePlayerCards;
 	}
-
 
 	/*
 	* @brief for both client and server
@@ -264,7 +322,6 @@ public:
 
 		return GameState->GetLeftoverCards(); 
 	}
-
 
 	/**
 	* @brief For both client and server
@@ -308,6 +365,41 @@ public:
 		return PlayerSetupData;
 	}
 
+	/* Get Player State from turn index, player states must have the role ID corresponding to Current Turn Index*/
+	UFUNCTION(BlueprintCallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
+		static AClueless_PlayerState* GetPlayerStateFromTurnIndex(int CurrentTurnIndex, UObject* WorldContextObj)
+	{
+		AClueless_PlayerState* CPlayerState = nullptr;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return CPlayerState;
+
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return CPlayerState;
+
+		TArray<FPlayerCharacterRelationEntry> PlayerRelationMapping = GameState->GetCharatersRelationMapping();
+
+		for (int i = 0; i < PlayerRelationMapping.Num(); i++)
+		{
+			if (i == CurrentTurnIndex)
+			{
+				if (PlayerRelationMapping[i].Character)
+				{
+					CPlayerState = PlayerRelationMapping[i].Character->GetPlayerState<AClueless_PlayerState>();
+					break;
+				}
+			}
+
+		}
+
+		return CPlayerState;
+
+	}
 
 	/**
 	* @brief For both client and server
@@ -364,7 +456,7 @@ public:
 	* @brief For both client and server
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
-	static TArray<FPlayerRelationMappingEntry> GetCurrentData(ACharacter* CurrentCharacter, UObject* WorldContextObj)
+		static TArray<FPlayerRelationMappingEntry> GetCurrentData(ACharacter* CurrentCharacter, UObject* WorldContextObj)
 	{
 		TArray<FPlayerRelationMappingEntry> DynamicRelationMapping;
 
@@ -402,6 +494,9 @@ public:
 		return DynamicRelationMapping;
 	}
 
+	/*
+	* Get all currently active player states, works on both client and server.
+	*/
 	UFUNCTION(BlueprintCallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
 		static TArray<AClueless_PlayerState*> GetActivePlayerStates(UObject* WorldContextObj)
 	{
@@ -458,9 +553,10 @@ public:
 		GameState->UpdatePlayerControllerWithCharacterOnServer(PlayerController, CurrentCharacter);
 	}
 
-	// This will change the game state of the current game.
-	// should be called on server
-	UFUNCTION(BlueprintCallable, Category = "Gamplay  API", meta = (WorldContext = "WorldContextObj"))
+	/* This will change the game state of the current game.
+	* should be called on server
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
 		static void ChangeClueGameState_Server(ClueGameState State, UObject* WorldContextObj)
 	{
 		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
@@ -474,6 +570,31 @@ public:
 			return;
 
 		GameState->ChangeGameState(State);
+	}
+
+	/* This will teleport the role ID's to its necessary position*/
+	UFUNCTION(BlueprintCallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
+		static void MakeTeleport_Server(UObject* WorldContextObj, int RoleID, int BlockID)
+	{
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (World == nullptr)
+			return;
+
+		AGameModeBase* GM = World->GetAuthGameMode<AGameModeBase>();
+
+		if (!GM) {
+			UE_LOG(LogTemp, Warning, TEXT("GM from Client is not Valid"));
+		}
+		else
+		{
+			UCluelessMovementComponent* GameMovementModeComp = (UCluelessMovementComponent*)GM->GetComponentByClass(UCluelessMovementComponent::StaticClass());
+
+			if (GameMovementModeComp != nullptr)
+			{
+				GameMovementModeComp->RoleMakeTeleport(BlockID, RoleID);
+			}
+		}
 	}
 
 	UFUNCTION(Blueprintcallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
@@ -527,7 +648,7 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Gamplay API", meta = (WorldContext = "WorldContextObj"))
-		static void MakeSuggestion_Server(UObject* WorldContextObj, int RoleID, FString CWeaponID, FString CRoleID, FString CRoomID)
+		static void MakeSuggestion_Server(UObject* WorldContextObj, int RoleID, FString CWeaponID, FString CRoleID)
 	{
 		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
 
@@ -545,7 +666,7 @@ public:
 
 			if (TurnBasedGameModeComp)
 			{
-				TurnBasedGameModeComp->OnPlayerMakeSuggestion(RoleID, CWeaponID, CRoleID, CRoomID);
+				TurnBasedGameModeComp->OnPlayerMakeSuggestion(RoleID, CWeaponID, CRoleID);
 			}
 		}
 
@@ -574,6 +695,55 @@ public:
 			}
 		}
 
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
+		static void SkipShowCard_Server(UObject* WorldContextObj, int RoleID)
+	{
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (World == nullptr)
+			return;
+
+		AGameModeBase* GM = World->GetAuthGameMode<AGameModeBase>();
+
+		if (!GM) {
+			UE_LOG(LogTemp, Warning, TEXT("GM from Client is not Valid"));
+		}
+		else
+		{
+			UClueGameTurnBasedComponent* TurnBasedGameModeComp = (UClueGameTurnBasedComponent*)GM->GetComponentByClass(UClueGameTurnBasedComponent::StaticClass());
+
+			if (TurnBasedGameModeComp)
+			{
+				TurnBasedGameModeComp->OnPlayerSkipShowCard(RoleID);
+			}
+		}
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
+		static void ShowCard_Server(UObject* WorldContextObj, int RoleID, FString CardID)
+	{
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (World == nullptr)
+			return;
+
+		AGameModeBase* GM = World->GetAuthGameMode<AGameModeBase>();
+
+		if (!GM) {
+			UE_LOG(LogTemp, Warning, TEXT("GM from Client is not Valid"));
+		}
+		else
+		{
+			UClueGameTurnBasedComponent* TurnBasedGameModeComp = (UClueGameTurnBasedComponent*)GM->GetComponentByClass(UClueGameTurnBasedComponent::StaticClass());
+
+			if (TurnBasedGameModeComp)
+			{
+				TurnBasedGameModeComp->OnPlayerShowCard(RoleID, CardID);
+			}
+		}
+		
 	}
 
 #pragma endregion Server Calls

@@ -12,14 +12,6 @@
 class AClueless_PlayerState;
 
 
-UENUM()
-enum ClueGameState
-{
-	PreGaming	UMETA(DisplayName = "Pre Gaming"),
-	Gaming		UMETA(DisplayName = "Gaming"),
-	PostGaming	UMETA(DisplayName = "Post Gaming"),
-};
-
 UCLASS()
 class CLUELESSJHU_API ACGameStateBase : public AGameStateBase
 {
@@ -75,6 +67,10 @@ public:
 	*/
 	UFUNCTION()
 		void OnRep_TurnChanged();
+
+	// when a show card index changed.
+	UFUNCTION()
+		void OnRep_ShowCardTurnChanged();
 
 #pragma endregion Client recieves state change from Server
 
@@ -156,8 +152,30 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
 		void UpdatePlayerControllerWithCharacterOnServer(APlayerController* PlayerController, ACharacter* Character);
 
+	// we need to refresh our turn index for any game action update
 	UFUNCTION()
-		void RefreshTurnIndex();
+		void UpdateCurrentTurnActions();
+
+	//
+	UFUNCTION()
+		int GetShowCardTurnIndex(int ShowCardCounter);
+
+	//
+	UFUNCTION()
+		FPlayerSuggestedData GetPlayerSuggestData()
+	{
+		return SuggestionCachedData;
+	}
+
+	//
+	UFUNCTION()
+		void SetPlayerSuggestData(FPlayerSuggestedData SuggestData)
+	{
+		SuggestionCachedData = SuggestData;
+
+		if (GetNetMode() == ENetMode::NM_ListenServer)		
+			OnRep_ShowCardTurnChanged();		
+	}
 
 #pragma endregion Server GetAndSet Functions
 
@@ -174,7 +192,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
 		int GetCurrentTurn()
 	{
-		return PlayerTurnIndex;
+		return PlayerTurnCachedData.PlayerTurnIndex;
 	}
 
 	// get player Setup Data
@@ -182,8 +200,14 @@ public:
 		TArray<FPlayerSetupStaticData>  GetPlayerSetupStaticData();
 
 
+
+
+
 #pragma endregion for Both server and client
 protected:
+
+	UFUNCTION(NetMulticast)
+		void OnMulticast_RPCNotifyShowedCard(FString CardID);
 
 	/**
 	 * @brief Data table for character and role mapping
@@ -220,14 +244,18 @@ protected:
 	UPROPERTY(ReplicatedUsing = OnRep_PlayerCharacterMappingChanged)
 		FPlayerRelationsContainer PlayerRelationMapping;
 
-
 	/**
 	 * @brief When turn changed we keep player's turn using this data.
 	*/
 	UPROPERTY(ReplicatedUsing = OnRep_TurnChanged)
-		int PlayerTurnIndex = 0;
+		FPlayerTurnInfo PlayerTurnCachedData;
 
-	
+	/*
+	* @brief When player makes suggestion, this index tracks when to make other players stop showing cards	
+	*/
+	UPROPERTY(ReplicatedUsing = OnRep_ShowCardTurnChanged)
+		FPlayerSuggestedData SuggestionCachedData;
+
 	/**
 	 * @brief The murder deck.
 	*/

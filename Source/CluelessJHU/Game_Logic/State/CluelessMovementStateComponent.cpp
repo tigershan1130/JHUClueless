@@ -6,6 +6,7 @@
 #include "StaticDataTableManager/Public/StaticDataSubSystem.h"
 #include "CluelessJHU/Graphical_API/BlockPointActor.h"
 #include "CluelessJHU/Player_Logic/Controller/CPawn.h"
+#include "CluelessJHU/Utilities/GameplayAPI.h"
 #include <Runtime/Engine/Classes/Kismet/GameplayStatics.h>
 
 // Sets default values for this component's properties
@@ -14,7 +15,6 @@ UCluelessMovementStateComponent::UCluelessMovementStateComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
 	// ...
 }
 
@@ -24,6 +24,9 @@ void UCluelessMovementStateComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+
+	SetIsReplicated(true);
+
 	// pre-load our data
 	GetDynamicMovmentCache();
 }
@@ -32,7 +35,10 @@ void UCluelessMovementStateComponent::GetLifetimeReplicatedProps(TArray<FLifetim
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UCluelessMovementStateComponent, DynamicMovementInfo);
+	FDoRepLifetimeParams SharedParams;
+	SharedParams.bIsPushBased = true;
+
+	DOREPLIFETIME(UCluelessMovementStateComponent, DynamicMovementInfoJson);
 }
 
 TArray<int> UCluelessMovementStateComponent::GetMovableBlocks(int CurrentBlockIDs)
@@ -61,6 +67,8 @@ TArray<FStaticMovementBlock> UCluelessMovementStateComponent::GetStaticMovementC
 // Get CluelessMovement Data
 TArray<FDynamicMovementEntry> UCluelessMovementStateComponent::GetDynamicMovmentCache()
 {
+	FDynamicMovementInfo DynamicMovementInfo = GetCurrentDynamicInfo();
+
 	if (DynamicMovementInfo.DynamicMovementInfoCache.Num() <= 0)
 	{
 		if (GIsServer) // only server can populate this data.
@@ -85,13 +93,14 @@ TArray<FDynamicMovementEntry> UCluelessMovementStateComponent::GetDynamicMovment
 					// TODO: populate our cache.
 					FDynamicMovementEntry DynamicMovEntry;
 					DynamicMovEntry.BlockID = RowData->BlockID;
-					DynamicMovEntry.BlockInfo = *RowData;
 					DynamicMovEntry.OccupiedRoles.Empty();
 
 					DynamicMovementInfo.DynamicMovementInfoCache.Add(DynamicMovEntry);
 				}
 
-				DynamicMovementInfo.MarkArrayDirty();
+				//DynamicMovementInfo.MarkArrayDirty();
+				// Reset json for notification
+				SetDynamicInfo_Server(DynamicMovementInfo);
 			}
 		}
 	}
@@ -102,43 +111,56 @@ TArray<FDynamicMovementEntry> UCluelessMovementStateComponent::GetDynamicMovment
 void UCluelessMovementStateComponent::ServerUpdateOccupied(int BlockID, int RoleID)
 {
 	bool Changed = false;
-	for (auto& Entry : DynamicMovementInfo.DynamicMovementInfoCache)
-	{
-		if (Entry.BlockID == BlockID)
-		{
-			if(!Entry.OccupiedRoles.Contains(RoleID))
-				Entry.OccupiedRoles.Add(RoleID);
 
-			Changed = true;
+	FDynamicMovementInfo DynamicMovementInfo = GetCurrentDynamicInfo();
+
+
+	for (int i = 0; i < DynamicMovementInfo.DynamicMovementInfoCache.Num(); i++)
+	{
+		if (DynamicMovementInfo.DynamicMovementInfoCache[i].BlockID == BlockID)
+		{
+			if (!DynamicMovementInfo.DynamicMovementInfoCache[i].OccupiedRoles.Contains(RoleID))
+			{
+				DynamicMovementInfo.DynamicMovementInfoCache[i].OccupiedRoles.Add(RoleID);
+
+				Changed = true;
+				DynamicMovementInfo.DynamicMovementInfoCache[i].IncrementCount++;
+			}
 		}
 		else
 		{
-			if (Entry.OccupiedRoles.Contains(RoleID))
-				Entry.OccupiedRoles.Remove(RoleID);
-
-			Changed = true;
+			if (DynamicMovementInfo.DynamicMovementInfoCache[i].OccupiedRoles.Contains(RoleID))
+			{
+				DynamicMovementInfo.DynamicMovementInfoCache[i].OccupiedRoles.Remove(RoleID);
+				Changed = true;
+				DynamicMovementInfo.DynamicMovementInfoCache[i].IncrementCount++;
+			}
 		}
-
 	}
 	
 	if (Changed)
 	{
+		SetDynamicInfo_Server(DynamicMovementInfo);
+
 		// Listen Server patch.
 		if (GetNetMode() == ENetMode::NM_ListenServer)
 		{
 			OnRep_DynamicMovementInfoChanged();
 		}
-
-		DynamicMovementInfo.MarkArrayDirty();
+	
 	}
 }
 
 
+#define print(text, color) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, color,text)
+
 void UCluelessMovementStateComponent::OnRep_DynamicMovementInfoChanged()
 {
 	// TODO: we need to upgrade our graphical from here.
-	if (GIsServer && GetNetMode() != ENetMode::NM_ListenServer)
-		return;
+	//if (GIsServer && GetNetMode() != ENetMode::NM_ListenServer)
+	//	return;
+
+	print("Current Player Made a move replicated to client", FColor::Red);
 
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACPawn::StaticClass(), FoundActors);
@@ -169,6 +191,8 @@ void UCluelessMovementStateComponent::OnRep_DynamicMovementInfoChanged()
 		}
 	}
 
+	FDynamicMovementInfo DynamicMovementInfo = GetCurrentDynamicInfo();
+
 	for (auto& Entry : DynamicMovementInfo.DynamicMovementInfoCache)
 	{
 		for (int i = 0; i < Entry.OccupiedRoles.Num(); i++)
@@ -178,6 +202,17 @@ void UCluelessMovementStateComponent::OnRep_DynamicMovementInfoChanged()
 			if (VisualPawns.Contains(OccupiedRoleID) && ClientBlockPoints.Contains(Entry.BlockID))
 			{
 				FVector BlockLocation = ClientBlockPoints[Entry.BlockID]->GetActorLocation();
+
+			    FStaticMovementBlock MovementStaticBlockInfo = UGameplayAPI::GetBlockInfo(Entry.BlockID, GetWorld());
+
+				if (!MovementStaticBlockInfo.IsHallWay)
+				{
+					float Range = FMath::RandRange(-200, 200);
+
+					BlockLocation = FVector(BlockLocation.X + Range, BlockLocation.Y + Range, BlockLocation.Z);
+				}
+
+
 				VisualPawns[OccupiedRoleID]->SetActorLocation(BlockLocation);
 			}
 		}

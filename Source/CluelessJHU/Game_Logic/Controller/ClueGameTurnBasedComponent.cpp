@@ -31,6 +31,21 @@ void UClueGameTurnBasedComponent::OnPlayerEndTurn()
 	GameState->ChangeToNextTurnIndex();
 }
 
+void UClueGameTurnBasedComponent::OnPlayerShowCard(int RoleID, FString CardID)
+{
+	print("[Server: CluelessGameLogic] TODO: Player Show Card", FColor::Red);
+
+	// 1. player showed a card to everyone, this needs to be displayed as a message
+}
+
+void UClueGameTurnBasedComponent::OnPlayerSkipShowCard(int RoleID)
+{
+	print("[Server: CluelessGameLogic] TODO: Player Skip Show Card", FColor::Red);
+
+
+
+}
+
 // Called when the game starts
 void UClueGameTurnBasedComponent::BeginPlay()
 {
@@ -201,12 +216,8 @@ void UClueGameTurnBasedComponent::OnPlayerMakeAccusation(int RoleID, FString CWe
 	
 }
 
-void UClueGameTurnBasedComponent::OnPlayerMakeSuggestion(int RoleID, FString CWeaponID, FString CRoleID, FString CRoomID)
+void UClueGameTurnBasedComponent::OnPlayerMakeSuggestion(int RoleID, FString CWeaponID, FString CRoleID)
 {
-	FString DebugText = "[Server: CluelessGameLogic] Player making suggestion: [" + CWeaponID + "," + CRoleID + "," + CRoomID + "]";
-
-	print(DebugText, FColor::Green);
-
 	// Check if Current role is actually inside a room before he or she can make a suggestion
     ACharacter* SuggestionInstigator = UGameplayAPI::GetCharacterFromRoleID(GetWorld(), RoleID);
 
@@ -219,6 +230,10 @@ void UClueGameTurnBasedComponent::OnPlayerMakeSuggestion(int RoleID, FString CWe
 		print("[Server: CluelessGameLogic] Player Location Not Valid", FColor::Red);
 		return;
 	}
+
+	FString DebugText = "[Server: CluelessGameLogic] Player making suggestion: [" + CWeaponID + "," + CRoleID + "," + FString::FromInt(CPlayerBlockID) + "]";
+
+	print(DebugText, FColor::Green);
 
 	FStaticMovementBlock MovementStaticInfo = UGameplayAPI::GetBlockInfo(CPlayerBlockID, GetWorld());
 
@@ -234,29 +249,53 @@ void UClueGameTurnBasedComponent::OnPlayerMakeSuggestion(int RoleID, FString CWe
 
 	FCardEntityData CardStaticInfo = UGameplayAPI::GetCardStaticData(CRoleID, GetWorld());
 
-	AClueless_PlayerState* SuspectPlayerState = (AClueless_PlayerState*)UGameplayAPI::FindPlayerFromCharacterID(CardStaticInfo.RelationID, GetWorld());
+	int SuspectRoleID = UGameplayAPI::FindRoleIDFromCharacterID(CardStaticInfo.RelationID, GetWorld());
 	
-	if (SuspectPlayerState == nullptr)
+	if (SuspectRoleID == -1)
 	{
 		print("[Server: CluelessGameLogic] Suspect Can't be Found", FColor::Red);
 		return;
 	}
-	else
-	{
-		print("[Server: CluelessGameLogic] Suspect Found Move player to Location", FColor::Green);
-
-
-	}
-
-
 
 	// Making suggestion move suggested character into this room.
-
-	// TODO: Make current role clear suggestion action
-
+	//call RoleMakeTeleport to teleport token into our room
+	UGameplayAPI::MakeTeleport_Server(GetWorld(), SuspectRoleID, MovementStaticInfo.BlockID);
+	
 	// In Order to make show card logic.
 	// 1. we need a replication variable called ShowCardPlayerTurnIndex(This will continue go up until somebody shows a suggested card or  our ShowCardPlayerIndex becomes the same player turn index again)
-	// 2. As each turn changes, other players will need to select a card to show, or no cards then skip suggestion // need to add those two to game actions...
 
+	FPlayerSuggestedData PlayerSuggestData;
+
+	PlayerSuggestData.BlockID =  UGameplayAPI::GetCardIDFromBlockID(CPlayerBlockID, GetWorld());
+	PlayerSuggestData.SuspectID = CRoleID;
+	PlayerSuggestData.WeaponID = CWeaponID;
+	PlayerSuggestData.SuggestionTurnCounter = 1;
+
+	//Set first person to make suggestion
+	ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
+
+	if (GameState == nullptr)
+		return;
+
+
+	int PlayerTurnIndex = GameState->GetShowCardTurnIndex(PlayerSuggestData.SuggestionTurnCounter);
+
+    AClueless_PlayerState* ShowCardPlayer =	UGameplayAPI::GetPlayerStateFromTurnIndex(PlayerTurnIndex, GetWorld());
+
+	if (ShowCardPlayer == nullptr)
+		return;
+
+	TArray<FString> CardsToCheck;
+	CardsToCheck.Add(PlayerSuggestData.BlockID);
+	CardsToCheck.Add(PlayerSuggestData.SuspectID);
+	CardsToCheck.Add(PlayerSuggestData.WeaponID);
+
+	bool ContainCards = ShowCardPlayer->ContainsCards(CardsToCheck);
+
+	PlayerSuggestData.AllowShowCardOption = true;
+
+	GameState->SetPlayerSuggestData(PlayerSuggestData);
+	// 2. As each turn changes, other players will need to select a card to show, or no cards then skip suggestion // need to add those two to game actions...
+	// All data needed is inside our data now, we will then send it to 
 }
 

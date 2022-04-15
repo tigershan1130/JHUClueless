@@ -8,84 +8,9 @@
 #include "Engine/DataAsset.h"
 #include "UObject/NameTypes.h"
 #include "GameFramework/GameStateBase.h"
+#include "CluelessJHU/Data/Game_StaticData.h"
+#include <Runtime/JsonUtilities/Public/JsonObjectConverter.h>
 #include "CluelessMovementStateComponent.generated.h"
-
-// This is static data pre-defined in UE's Datatable
-USTRUCT(BlueprintType, Blueprintable)
-struct CLUELESSJHU_API FStaticMovementBlock : public FTableRowBase
-{
-	GENERATED_USTRUCT_BODY();
-
-public:
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite) // block Id for internal referencing.
-		int BlockID;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite) // name of the current block for message info displaying
-		FText BlockName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite) // This contains all connecting neighborBlocks they can travel to.
-		TArray<int> NeighborBlocks;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite) // because hall way can only occupied once.
-		bool IsHallWay;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite) // check if it is a spawn point, if it is, it can go back to this point
-		bool IsSpawnPoint;
-};
-
-
-// This is Dynamic Movement Info cache that's been allocated in runtime
-USTRUCT(BlueprintType)
-struct FDynamicMovementEntry : public FFastArraySerializerItem
-{
-	GENERATED_USTRUCT_BODY()
-public:
-	UPROPERTY(BlueprintReadWrite)
-		FStaticMovementBlock BlockInfo;
-
-	UPROPERTY(BlueprintReadWrite)
-		TArray<int> OccupiedRoles;
-
-	UPROPERTY(BlueprintReadWrite)
-		int BlockID;
-
-	void PreReplicatedRemove(const struct FDynamicMovementInfoContainer& ArraySerializer) {}
-	void PostReplicatedAdd(const struct FDynamicMovementInfoContainer& ArraySerializer) {}
-	void PostReplicatedChange(const struct FDynamicMovementInfoContainer& ArraySerializer) {}
-
-
-	bool operator==(const FDynamicMovementEntry& lhs) const
-	{
-		return (BlockID == lhs.BlockID);
-	}
-
-};
-
-
-USTRUCT()
-struct FDynamicMovementInfoContainer : public FFastArraySerializer
-{
-	GENERATED_USTRUCT_BODY()
-
-		UPROPERTY()
-		TArray<FDynamicMovementEntry> DynamicMovementInfoCache;
-
-	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
-	{
-		return FastArrayDeltaSerialize<FDynamicMovementEntry>(DynamicMovementInfoCache, DeltaParms, *this);
-	}
-};
-
-
-template<>
-struct TStructOpsTypeTraits<FDynamicMovementInfoContainer> : public TStructOpsTypeTraitsBase2<FDynamicMovementInfoContainer>
-{
-	enum
-	{
-		WithNetDeltaSerializer = true,
-	};
-};
 
 
 /*
@@ -133,9 +58,30 @@ public:
 		return FoundEntry;
 	}
 
+	UFUNCTION()		
+		FDynamicMovementInfo GetCurrentDynamicInfo()
+	{
+		FDynamicMovementInfo DynamicMovementInfo;
+		FJsonObjectConverter::JsonObjectStringToUStruct(DynamicMovementInfoJson, &DynamicMovementInfo, 0, 0);
+
+		return DynamicMovementInfo;
+
+	}
+
+	UFUNCTION()
+		void SetDynamicInfo_Server(FDynamicMovementInfo ModifiedInfoData)
+	{
+		FString JSONPayload;
+		FJsonObjectConverter::UStructToJsonObjectString(ModifiedInfoData, JSONPayload, 0, 0);
+
+		DynamicMovementInfoJson = JSONPayload;
+	}
+
 	UFUNCTION()
 		int GetBlockIDFromRoleID(int RoleID)
 	{
+		FDynamicMovementInfo DynamicMovementInfo = GetCurrentDynamicInfo();
+
 		TArray<FDynamicMovementEntry> MovementBlocks = DynamicMovementInfo.DynamicMovementInfoCache;
 
 		for (auto& Entry : MovementBlocks)
@@ -154,7 +100,6 @@ public:
 	UFUNCTION()
 	void OnRep_DynamicMovementInfoChanged();
 
-
 #pragma endregion Client recieves state change from Server
 
 protected:
@@ -164,7 +109,10 @@ protected:
 private:
 
 	UPROPERTY(ReplicatedUsing = OnRep_DynamicMovementInfoChanged)
-	FDynamicMovementInfoContainer DynamicMovementInfo;
+	FString DynamicMovementInfoJson;
+
+	//UPROPERTY(ReplicatedUsing = OnRep_Test)
+	//	int Increment;
 
 	UPROPERTY()
 		TArray<FStaticMovementBlock> StaticMovementInfocache;

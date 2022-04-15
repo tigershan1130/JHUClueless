@@ -34,17 +34,10 @@ public:
 		virtual void OnRep_RoleID();
 
 	UFUNCTION()
-		virtual void OnRep_GameActionChanged();
-
-	UFUNCTION()
 		virtual void OnRep_ChangedPawn();
 
 	UFUNCTION()
 		virtual void OnRep_CardsDistributed();
-
-	//UFUNCTION()
-	//	virtual void OnRep_BlockChanged();
-
 #pragma endregion Recieves message from server, these states have changed.
 
 
@@ -57,50 +50,6 @@ public:
 		void SetControlledPawn(APawn* Pawn)
 	{
 		CurrentControlledPawn = Pawn;
-	}
-
-
-	//#define TEST_BIT(Bitmask, Bit) (((Bitmask) & (1 << static_cast<uint8>(Bit))) > 0)
-	//#define SET_BIT(Bitmask, Bit) (Bitmask |= 1 << static_cast<uint8>(Bit))
-	//#define CLEAR_BIT(Bitmask, Bit) (Bitmask &= ~(1 << static_cast<uint8>(Bit)))
-
-	UFUNCTION()
-		void SetAllowGameAction(EPlayerGameAction Action)
-	{
-		CurrentGameAction |= 1 << static_cast<uint8>(Action);
-
-		// for special case of listen server
-		if (GetNetMode() == ENetMode::NM_ListenServer)
-			OnRep_GameActionChanged();
-	}
-
-	UFUNCTION()
-		bool IsActionAllowed(EPlayerGameAction Action)
-	{
-		return (CurrentGameAction & (1 << static_cast<uint8>(Action))) > 0;
-	}
-
-	UFUNCTION()
-		void ClearGameAction(EPlayerGameAction Action)
-	{
-		CurrentGameAction &= ~(1 << static_cast<uint8>(Action));
-
-		// for special case of listen server
-		if (GetNetMode() == ENetMode::NM_ListenServer)
-			OnRep_GameActionChanged();
-	}
-
-	UFUNCTION()
-		void ClearAllGameAction()
-	{
-		if (CurrentGameAction != 0)
-		{
-			CurrentGameAction = 0;
-
-			// for special case of listen server
-			if (GetNetMode() == ENetMode::NM_ListenServer)
-				OnRep_GameActionChanged();
-		}
 	}
 
 	UFUNCTION()
@@ -132,6 +81,33 @@ public:
 
 #pragma endregion Server Functions
 
+
+#pragma region Server and Client Functions
+	UFUNCTION()
+		bool ContainsCards(TArray<FString> CardIDs)
+	{
+		bool ContainCardFlag = false;
+
+		for (auto& Entry : HandCards)
+		{
+			if (CardIDs.Contains(Entry.CardID))
+			{
+				ContainCardFlag = true;
+			}
+		}
+
+		return ContainCardFlag;
+	}
+
+	UFUNCTION()
+		APawn* GetCurrentControlledPawn()
+	{
+		return CurrentControlledPawn;
+	}
+
+
+#pragma endregion Server and Client Functions
+
 protected:
 	/**
 	 * @brief Check this player posses which character should be -1 when player is connected
@@ -140,21 +116,11 @@ protected:
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_RoleID)
 		int RoleID;
 
-
 	/**
 	 * @brief check player current state it is in, Playing, Waiting or Game End.
 	*/
 	UPROPERTY(BlueprintReadWrite, Replicated)
 		int CurrentPlayerState;
-
-
-	/**
-	 * @brief In Game, what kind of state are we in, should we make our move, should we make a suggestion, this will control player's current action
-	 * or should we wait for other's players turn.
-	*/
-	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_GameActionChanged)
-		uint8 CurrentGameAction; 
-
 
 	/**
 	 * @brief This is the current pawn we are controlling.

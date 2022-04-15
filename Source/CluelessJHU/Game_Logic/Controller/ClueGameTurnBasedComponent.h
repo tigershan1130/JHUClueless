@@ -37,11 +37,21 @@ public:
 
 	// This function will make player to make a suggestion
 	UFUNCTION()
-		void OnPlayerMakeSuggestion(int RoleID, FString CWeaponID, FString CRoleID, FString CRoomID);
+		void OnPlayerMakeSuggestion(int RoleID, FString CWeaponID, FString CRoleID);
 
 	// this function will make player end turn
 	UFUNCTION()
 		void OnPlayerEndTurn();
+
+	// Player show card
+	UFUNCTION()
+		void OnPlayerShowCard(int RoleID, FString CardID);
+
+	// player skip show card progress because he/she doesn't have a card to show.
+	UFUNCTION()
+		void OnPlayerSkipShowCard(int RoleID);
+
+
 #pragma endregion Server Events Recieved From Client
 
 

@@ -47,20 +47,7 @@ public:
 	// Called to bind functionality to input, This is client only.
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	//UFUNCTION()
-	//	void InitClientVisualCharacter(int RoleID);
-
-	//UFUNCTION()
-	//	void SetVisualPawnToBlock(int BlockID, int RoleID);
-
-	//UFUNCTION()
-	//ACPawn* GetClientVisualActor()
-	//{
-	//	return ClientControlledVisualActor;
-	//}
-
 #pragma region ServerStateChanged
-
 	/*
 	* this will be called by Player State to notify that character is ready to initialize data. Server->Client
 	*/
@@ -89,6 +76,18 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
 		void OnGameStateChanged(ClueGameState State);
 
+	/*
+	* @brief This triggers when a player needs to show his/her cards
+	*/
+	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
+		void OnSelfToProveSuggestion();
+
+	/*
+	* Not my turn, other player's turn to prove his/her cards
+	*/
+	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
+		void OnOtherToProveSuggestion();
+
 	/**
 	 * @brief server->Client, Server notifies Client that host is able to start game. Only Host should able to have Start-Game Button enabled.
 	*/
@@ -109,6 +108,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
 		void OnOtherCharacterTurn();
 
+
+
 #pragma endregion ServerStateChanged
 	
 
@@ -120,6 +121,10 @@ public:
 		void ServerRPCSetGameStart();
 	void ServerRPCSetGameStart_Implementation();
 
+	/* Cheat Function remove later, for testing purpose*/
+	UFUNCTION(BlueprintCallable, Reliable, Server)
+		void ServerRPCMakeTeleport(int BlockID);
+	void ServerRPCMakeTeleport_Implementation(int BlockID);
 
 	/**
 	* @brief Driver: client send message to server to request for a movement
@@ -131,9 +136,19 @@ public:
 	/*
 	* @brief Driver: client send message to server to make a suggestion
 	*/
-	UFUNCTION(Blueprintcallable, Reliable, Server)
-		void ServerRPCMakeSuggestion(const FString& CWeaponID, const FString& CRoleID, const FString& CRoomID);
-	void ServerRPCMakeSuggestion_Implementation(const FString& CWeaponID, const FString& CRoleID, const FString& CRoomID);
+	UFUNCTION(BlueprintCallable, Reliable, Server)
+		void ServerRPCMakeSuggestion(const FString& CWeaponID, const FString& CRoleID);
+	void ServerRPCMakeSuggestion_Implementation(const FString& CWeaponID, const FString& CRoleID);
+
+	/* Skip Show Card Because we got no cards to show*/
+	UFUNCTION(BlueprintCallable, Reliable, Server)
+		void ServerRPCSkipShowCard();
+	void ServerRPCSkipShowCard_Implementation();
+
+	/* We Have showed a card, end our turn*/
+	UFUNCTION(BlueprintCallable, Reliable, Server)
+		void ServerRPCShowCard(const FString& CardID);
+	void ServerRPCShowCard_Implementation(const FString& CardID);
 
 	/**
 	* @brief Driver: client send mssage to server to make an accusation
@@ -159,9 +174,9 @@ public:
 	}
 
 	UFUNCTION(Exec)
-		void FunctionTestMakeSuggestionByID(FString WeaponID, FString RoleID, FString RoomID)
+		void FunctionTestMakeSuggestionByID(FString WeaponID, FString RoleID)
 	{
-		ServerRPCMakeSuggestion(WeaponID, RoleID, RoomID);
+		ServerRPCMakeSuggestion(WeaponID, RoleID);
 	}
 
 	UFUNCTION(Exec)
@@ -193,13 +208,12 @@ public:
 	}
 
 	UFUNCTION(Exec)
-		void FunctionTestMakeSuggestionByName(FString Suspect, FString Weapon, FString Location)
+		void FunctionTestMakeSuggestionByName(FString Suspect, FString Weapon)
 	{
 		ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
 
 		FString WeaponID;
 		FString RoleID;
-		FString RoomID;
 
 		if (GameState)
 		{
@@ -211,21 +225,50 @@ public:
 					RoleID = Entry.CardID;
 				if (Entry.CardName.ToString() == Weapon)
 					WeaponID = Entry.CardID;
-				if (Entry.CardName.ToString() == Location)
-					RoomID = Entry.CardID;
 			}
 
 		}
 
-		ServerRPCMakeSuggestion(WeaponID, RoleID, RoomID);
+		ServerRPCMakeSuggestion(WeaponID, RoleID);
 	}
 
+	UFUNCTION(Exec)
+		void FunctionTestSkipShowCard()
+	{
+		ServerRPCSkipShowCard();
+	}
 
+	UFUNCTION(Exec)
+		void FunctionTestShowCardByName(FString CardName)
+	{
+		ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
+		if (GameState)
+		{
+			TArray<FCardEntityData> SetupCards = GameState->GetCardsSetupData();
+
+			for (auto& Entry : SetupCards)
+			{
+				if (Entry.CardName.ToString() == CardName)
+				{
+					ServerRPCShowCard(Entry.CardID);
+					break;
+				}
+
+			}
+		}
+	}
 
 	UFUNCTION(Exec)
 		void FunctionTestMakeMovement(int BlockID)
 	{
 		ServerRPCMakeMovement(BlockID);
+	}
+
+	UFUNCTION(Exec)
+		void FunctionTestMakeTeleport(int BlockID)
+	{
+		ServerRPCMakeTeleport(BlockID);
+
 	}
 
 	UFUNCTION(Exec)

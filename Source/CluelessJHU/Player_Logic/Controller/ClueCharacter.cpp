@@ -36,6 +36,15 @@ void AClueCharacter::ServerRPCSetGameStart_Implementation()
 	//	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Server RPC set game start!"));
 }
 
+void AClueCharacter::ServerRPCMakeTeleport_Implementation(int BlockID)
+{
+	AClueless_PlayerState* CPlayerState = (AClueless_PlayerState*)this->GetPlayerState();
+
+	// this is server side Clue Character call
+	if (CPlayerState)
+		UGameplayAPI::MakeTeleport_Server((UObject*)this, CPlayerState->GetRoleID(), BlockID);
+}
+
 void AClueCharacter::ServerRPCMakeMovement_Implementation(int BlockID)
 {
 	AClueless_PlayerState* CPlayerState = (AClueless_PlayerState*)this->GetPlayerState();
@@ -45,13 +54,31 @@ void AClueCharacter::ServerRPCMakeMovement_Implementation(int BlockID)
 		UGameplayAPI::MakeMovement_Server((UObject*)this, BlockID, CPlayerState->GetRoleID());
 }
 
-void AClueCharacter::ServerRPCMakeSuggestion_Implementation(const FString& CWeaponID, const FString& CRoleID, const FString& CRoomID)
+void AClueCharacter::ServerRPCMakeSuggestion_Implementation(const FString& CWeaponID, const FString& CRoleID)
 {
 	AClueless_PlayerState* CPlayerState = (AClueless_PlayerState*)this->GetPlayerState();
 
 	// this is server side Clue Character call
 	if (CPlayerState)
-		UGameplayAPI::MakeSuggestion_Server((UObject*)this, CPlayerState->GetRoleID(), CWeaponID, CRoleID, CRoomID);
+		UGameplayAPI::MakeSuggestion_Server((UObject*)this, CPlayerState->GetRoleID(), CWeaponID, CRoleID);
+}
+
+void AClueCharacter::ServerRPCSkipShowCard_Implementation()
+{
+	AClueless_PlayerState* CPlayerState = (AClueless_PlayerState*)this->GetPlayerState();
+
+	// this is server side Clue Character call
+	if (CPlayerState)
+		UGameplayAPI::SkipShowCard_Server((UObject*)this, CPlayerState->GetRoleID());
+}
+
+void AClueCharacter::ServerRPCShowCard_Implementation(const FString& CardID)
+{
+	AClueless_PlayerState* CPlayerState = (AClueless_PlayerState*)this->GetPlayerState();
+
+	// this is server side Clue Character call
+	if (CPlayerState)
+		UGameplayAPI::ShowCard_Server((UObject*)this, CPlayerState->GetRoleID(), CardID);
 }
 
 
@@ -112,78 +139,3 @@ void AClueCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
-
-//void AClueCharacter::InitClientVisualCharacter(int RoleID)
-//{
-//	if (GIsServer && GetNetMode() != ENetMode::NM_ListenServer)
-//		return;
-//
-//	TArray<AActor*> FoundActors;
-//	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACPawn::StaticClass(), FoundActors);
-//
-//	for (int i = 0; i < FoundActors.Num(); i++)
-//	{
-//		ACPawn* CurrentCharacter = (ACPawn*)FoundActors[i];
-//		if (RoleID == CurrentCharacter->RoleID)
-//			ClientControlledVisualActor = CurrentCharacter;
-//	}
-//
-//	if (ClientBlockPoints.Num() <= 0)
-//	{
-//		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABlockPointActor::StaticClass(), FoundActors);
-//
-//		for (int i = 0; i < FoundActors.Num(); i++)
-//		{
-//			ABlockPointActor* BlockPoint = (ABlockPointActor*)FoundActors[i];
-//			if (BlockPoint)
-//				ClientBlockPoints.Add(BlockPoint);
-//		}
-//	}
-//}
-//
-//void AClueCharacter::SetVisualPawnToBlock(int BlockID, int RoleID)
-//{
-//	if (ClientBlockPoints.Num() <= 0)
-//	{
-//		TArray<AActor*> FoundActors;
-//
-//		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABlockPointActor::StaticClass(), FoundActors);
-//
-//		for (int i = 0; i < FoundActors.Num(); i++)
-//		{
-//			ABlockPointActor* BlockPoint = (ABlockPointActor*)FoundActors[i];
-//			if (BlockPoint)
-//				ClientBlockPoints.Add(BlockPoint);
-//		}
-//	}
-//
-//	if (ClientControlledVisualActor == nullptr)
-//	{
-//		TArray<AActor*> FoundActors;
-//		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACPawn::StaticClass(), FoundActors);
-//
-//		for (int i = 0; i < FoundActors.Num(); i++)
-//		{
-//			ACPawn* CurrentCharacter = (ACPawn*)FoundActors[i];
-//			if (RoleID == CurrentCharacter->RoleID)
-//				ClientControlledVisualActor = CurrentCharacter;
-//		}
-//	}
-//
-//	ABlockPointActor* FoundBlock = nullptr;
-//
-//	for (int i = 0; i < ClientBlockPoints.Num(); i++)
-//	{
-//		if (ClientBlockPoints[i]->BlockID == BlockID)
-//			FoundBlock = ClientBlockPoints[i];
-//
-//	}
-//
-//	if (FoundBlock && ClientControlledVisualActor != nullptr)
-//	{
-//		// TODO: move current Visual Character to Block Location
-//		ClientControlledVisualActor->SetActorLocation(FoundBlock->GetActorLocation());
-//	}
-//
-//}
-
