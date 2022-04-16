@@ -9,7 +9,12 @@
 #include "CluelessJHU/Utilities/GameplayAPI.h"
 #include "CluelessJHU/Data/Game_StaticData.h"
 #include "StaticDataTableManager/Public/StaticDataSubSystem.h"
+#include "Misc/MessageDialog.h"
 #include <Runtime/Engine/Classes/Kismet/GameplayStatics.h>
+
+
+#define print(text, color) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, color,text)
+
 
 ACGameStateBase::ACGameStateBase()
 {
@@ -86,9 +91,32 @@ TArray<FPlayerSetupStaticData> ACGameStateBase::GetPlayerSetupStaticData()
 }
 
 /* This is been called from server to client, this is executed on server and client*/
-void ACGameStateBase::OnMulticast_RPCNotifyShowedCard(FString CardID)
+void ACGameStateBase::OnMulticast_RPCNotifyShowedCard_Implementation(const FString& RoleName, const FString& CardID)
 {
 	// TODO: Show a notification box saying we blah blah blah
+	//FString Message = "Player Showed Card: " + CardID;
+	//print(Message, FColor::Yellow);
+
+    FCardEntityData CardData = UGameplayAPI::GetCardFromCardID(CardID, GetWorld());
+
+	//FString Msg = "Player Showed Card: " + CardData.CardName.ToString();
+
+	TArray<AClueless_PlayerState*> ActivePlayerStates = UGameplayAPI::GetActivePlayerStates(GetWorld());
+
+	for (auto& Entry : ActivePlayerStates)
+	{
+		APawn* CurrentPawn = Entry->GetCurrentControlledPawn();
+		
+		if (CurrentPawn->IsLocallyControlled())
+		{
+			AClueCharacter* CluelessCharacter = (AClueCharacter*)CurrentPawn;
+			if (CluelessCharacter)
+			{
+				FString Msg = " Showed Card: " + CardData.CardName.ToString();
+				CluelessCharacter->OnPlayerShowCard(RoleName, Msg);
+			}
+		}
+	}
 }
 
 /**
@@ -366,37 +394,36 @@ void ACGameStateBase::OnRep_ShowCardTurnChanged()
 {
 	int ActualPlayerShowCardTurn = GetShowCardTurnIndex(SuggestionCachedData.SuggestionTurnCounter);
 
+
+
 	AClueless_PlayerState* CPlayerState = UGameplayAPI::GetPlayerStateFromTurnIndex(ActualPlayerShowCardTurn, GetWorld());
 
 	if (CPlayerState == nullptr)
 		return;
 
-	APawn* CCharacter = CPlayerState->GetCurrentControlledPawn();
+	TArray<AClueless_PlayerState*> AllActivePlayers = UGameplayAPI::GetActivePlayerStates(GetWorld());
 
-	if (CCharacter == nullptr)
+	if (SuggestionCachedData.IsInShowCardPhase == false)
+	{
+		// refresh turn ui
+		//print("[Game Logic Client] Show Card Turn Is Done", FColor::Green);
+
+		OnRep_TurnChanged();
 		return;
-
-	if (CCharacter->IsLocallyControlled())
-	{
-		// Ok this is my turn I need to display stuff
-		AClueCharacter* ClueCharacter =	(AClueCharacter*)CCharacter;
-		if (ClueCharacter != nullptr)
-		{
-			//making sure I turn on my suggestion panel
-			ClueCharacter->OnSelfToProveSuggestion();
-		}
-	}
-	else
-	{
-		// ok this is not my turn
-		AClueCharacter* ClueCharacter = (AClueCharacter*)CCharacter;
-		if (ClueCharacter != nullptr)
-		{
-			// making sure I turn off my suggestion panel
-			ClueCharacter->OnOtherToProveSuggestion();
-		}
 	}
 
+	for (auto& Entry : AllActivePlayers)
+	{
+		AClueCharacter* ClueCharacter = (AClueCharacter*)Entry->GetCurrentControlledPawn();
+	
+		if (ClueCharacter->IsLocallyControlled())
+		{
+			if (Entry == CPlayerState)			
+				ClueCharacter->OnSelfToProveSuggestion();			
+			else			
+				ClueCharacter->OnOtherToProveSuggestion();			
+		}
+	}
 }
 
 /*
@@ -453,7 +480,6 @@ TArray<FCardEntityData> ACGameStateBase::GetCardsSetupData()
 			FCardEntityData* RowData = CardsSetupStaticData->FindRow<FCardEntityData>(RowName, _Context);
 			ClueCardsSetupData.Add(*RowData);
 		}
-
 	}
 
 	return ClueCardsSetupData;

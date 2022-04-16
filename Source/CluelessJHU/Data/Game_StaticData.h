@@ -30,15 +30,6 @@ enum class EPlayerGameAction : uint8
 
 ENUM_CLASS_FLAGS(EPlayerGameAction);
 
-/*
-* Player suggestion turn options
-*/
-UENUM(BlueprintType, meta= (BitFlags))
-enum class EPlayerSuggestionAction : uint8
-{
-	Skip = 0x00,
-	ShowCard = 0x01,
-};
 
 
 USTRUCT(BlueprintType, Blueprintable)
@@ -102,7 +93,7 @@ public:
 		bool AllowShowCardOption;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		EPlayerSuggestionAction SuggestionAction;
+		bool IsInShowCardPhase = false;
 };
 
 USTRUCT(BlueprintType, Blueprintable)
@@ -168,6 +159,11 @@ public:
 	// card description if needed
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FText Description;
+
+	bool operator==(const FCardEntityData& lhs) const
+	{
+		return ((ID == lhs.ID) && (CardID == lhs.CardID));
+	}
 };
 
 USTRUCT(BlueprintType)

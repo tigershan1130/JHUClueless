@@ -108,7 +108,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
 		void OnOtherCharacterTurn();
 
-
+	// When user show a card to everyone
+	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
+		void OnPlayerShowCard(const FString& PlayerName, const FString& CardName);
 
 #pragma endregion ServerStateChanged
 	

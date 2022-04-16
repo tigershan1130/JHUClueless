@@ -9,6 +9,8 @@
 #include "CluelessJHU/Utilities/GameplayAPI.h"
 #include <Runtime/Engine/Classes/Kismet/GameplayStatics.h>
 
+#define print(text, color) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, color,text)
+
 // Sets default values for this component's properties
 UCluelessMovementStateComponent::UCluelessMovementStateComponent()
 {
@@ -151,17 +153,8 @@ void UCluelessMovementStateComponent::ServerUpdateOccupied(int BlockID, int Role
 	}
 }
 
-
-#define print(text, color) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, color,text)
-
 void UCluelessMovementStateComponent::OnRep_DynamicMovementInfoChanged()
 {
-	// TODO: we need to upgrade our graphical from here.
-	//if (GIsServer && GetNetMode() != ENetMode::NM_ListenServer)
-	//	return;
-
-	print("Current Player Made a move replicated to client", FColor::Red);
-
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACPawn::StaticClass(), FoundActors);
 

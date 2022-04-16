@@ -13,6 +13,8 @@
 #include "CluelessJHU/Game_Logic/State/CGameStateBase.h"
 #include "GameplayAPI.generated.h"
 	
+
+#define print(text, color) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, color,text)
 /**
  * 
  */
@@ -44,6 +46,7 @@ public:
 		{
 			if (Entry.RelationID.ToString() == FString::FromInt(BlockID))
 			{
+				UE_LOG(LogTemp, Warning, TEXT("Entry Relation ID: %s, %d"), *(Entry.RelationID.ToString()), *(Entry.CardID));
 				BlockCardID = Entry.CardID;
 			}
 		}
@@ -60,14 +63,14 @@ public:
 		FStaticMovementBlock FoundBlock;
 
 		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
-		
+
 		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
 
 		if (GameState == nullptr)
 			return FoundBlock;
 
 		UCluelessMovementStateComponent* CluelessMovementStateCompCache = (UCluelessMovementStateComponent*)(GameState->GetComponentByClass(UCluelessMovementStateComponent::StaticClass()));
-		
+
 
 		if (CluelessMovementStateCompCache == nullptr)
 		{
@@ -102,7 +105,7 @@ public:
 
 		UCluelessMovementStateComponent* CluelessMovementStateCompCache = (UCluelessMovementStateComponent*)(GameState->GetComponentByClass(UCluelessMovementStateComponent::StaticClass()));
 
-		if (!CluelessMovementStateCompCache)		
+		if (!CluelessMovementStateCompCache)
 			return -1;
 
 
@@ -239,6 +242,26 @@ public:
 		}
 
 		return nullptr;
+	}
+
+	/* Get current */
+	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
+		static FPlayerSuggestedData GetSuggestCachedData(UObject* WorldContextObj)
+	{
+		FPlayerSuggestedData SuggestedCacheData;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return SuggestedCacheData;
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return SuggestedCacheData;
+
+		return GameState->GetPlayerSuggestData();
+
 	}
 
 	/**
@@ -399,6 +422,59 @@ public:
 
 		return CPlayerState;
 
+	}
+
+	/* This may return empty role ID*/
+	UFUNCTION(BlueprintCallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
+		static AClueless_PlayerState* GetPlayerStateFromRoleID(int RoleID, UObject* WorldContextObj)
+	{
+		AClueless_PlayerState* FoundPlayerState = nullptr;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		TArray<AClueless_PlayerState*> CActivePlayerStates;
+
+		if (World)
+			CActivePlayerStates = UGameplayAPI::GetActivePlayerStates(World);
+			
+		for (int i = 0; i < CActivePlayerStates.Num(); i++)
+		{
+			if (CActivePlayerStates[i]->GetRoleID() == RoleID)
+			{
+				FoundPlayerState = CActivePlayerStates[i];
+			}
+		}
+
+		return FoundPlayerState;
+	}
+
+	/* Get Card Information from CardID*/
+	UFUNCTION(BlueprintCallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
+		static FCardEntityData GetCardFromCardID(FString CardID, UObject* WorldContextObj)
+	{
+		FCardEntityData FoundCard;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return FoundCard;
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return FoundCard;	
+
+		TArray<FCardEntityData> CardEntityData = GameState->GetCardsSetupData();
+
+		for (int i = 0; i < CardEntityData.Num(); i++)
+		{
+			if (CardEntityData[i].CardID == CardID)
+			{
+				FoundCard = CardEntityData[i];
+			}
+		}
+
+		return FoundCard;
 	}
 
 	/**

@@ -33,16 +33,83 @@ void UClueGameTurnBasedComponent::OnPlayerEndTurn()
 
 void UClueGameTurnBasedComponent::OnPlayerShowCard(int RoleID, FString CardID)
 {
-	print("[Server: CluelessGameLogic] TODO: Player Show Card", FColor::Red);
+	print("[Server: CluelessGameLogic] Player Show Card", FColor::Green);
+	// validate if this cardID is validate to show(Fake Client(hacker)can fake this CardID)
+	AClueless_PlayerState* CPlayerState = UGameplayAPI::GetPlayerStateFromRoleID(RoleID, GetWorld());
 
-	// 1. player showed a card to everyone, this needs to be displayed as a message
+	if (CPlayerState == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Server: CluelessGameLogic] Error can't find PlayerState"));
+		return;
+	}
+
+	ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
+
+	if (GameState == nullptr)
+		return;
+
+    FCardEntityData CardEntityData = UGameplayAPI::GetCardFromCardID(CardID, GetWorld());
+
+	if (!CPlayerState->GetCardsInHand().Contains(CardEntityData))
+	{
+		return;
+	}
+
+	FPlayerSetupStaticData PlayerStaticData = UGameplayAPI::GetCurrentRoleData(RoleID, GetWorld());
+
+	// 1. Player showed a card to everyone, this needs to be displayed as a message
+	GameState->OnMulticast_RPCNotifyShowedCard(PlayerStaticData.CharacterName.ToString(), CardID);
+
+	// end Suggestion restore back to original user
+	OnFinishedSuggestion();
 }
 
 void UClueGameTurnBasedComponent::OnPlayerSkipShowCard(int RoleID)
 {
-	print("[Server: CluelessGameLogic] TODO: Player Skip Show Card", FColor::Red);
+	print("[Server: CluelessGameLogic] Player Skip Show Card", FColor::Green);
 
+	ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
 
+	if (GameState == nullptr)
+		return;
+
+	FPlayerSuggestedData CurrentSuggestData = GameState->GetPlayerSuggestData();
+
+	CurrentSuggestData.SuggestionTurnCounter++;
+
+	int CurrentTurn = GameState->GetCurrentTurn();
+	int TotalPlayersNum = UGameplayAPI::GetActivePlayerStates(GetWorld()).Num();
+
+	if (CurrentTurn + CurrentSuggestData.SuggestionTurnCounter >= TotalPlayersNum)
+	{
+		int AdditionalCounter = CurrentTurn + CurrentSuggestData.SuggestionTurnCounter % TotalPlayersNum;
+
+		if (AdditionalCounter == CurrentTurn) // everybody have been skipping their cards....
+		{
+			GameState->ResetSuggestionData();
+		}
+		else
+		{
+			CurrentSuggestData.AllowShowCardOption = CheckSuggestCards(CurrentSuggestData.BlockID, CurrentSuggestData.WeaponID, CurrentSuggestData.SuspectID, CurrentSuggestData.SuggestionTurnCounter);
+			GameState->SetPlayerSuggestData(CurrentSuggestData);
+		}
+	}
+	else
+	{
+		CurrentSuggestData.AllowShowCardOption = CheckSuggestCards(CurrentSuggestData.BlockID, CurrentSuggestData.WeaponID, CurrentSuggestData.SuspectID, CurrentSuggestData.SuggestionTurnCounter);
+		GameState->SetPlayerSuggestData(CurrentSuggestData);
+	}
+
+}
+
+void UClueGameTurnBasedComponent::OnFinishedSuggestion()
+{
+	ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
+
+	if (GameState == nullptr)
+		return;
+
+	GameState->ResetSuggestionData();
 
 }
 
@@ -55,9 +122,10 @@ void UClueGameTurnBasedComponent::BeginPlay()
 	
 }
 
+
 void UClueGameTurnBasedComponent::OnGameInit()
 {
-	print("[Server: CluelessGameLogic] Initializing Game...", FColor::Green);
+	print("[Server: CluelessGameLogic] Initialized Game...", FColor::Green);
 	
 	//1. Spawn and distributing cards
 	ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
@@ -139,10 +207,19 @@ void UClueGameTurnBasedComponent::OnGameInit()
 
 		for (int j = 0; j < PlayerStartingCardsNum; j++)
 		{
-			int CurrentIndex = i * (PlayerStartingCardsNum-1) + j;
+			int CurrentIndex = i * (PlayerStartingCardsNum) + j;
 			PlayerHands[i].Add(ShuffleCards[CurrentIndex]);
 		}
 	}
+
+
+	//for (auto& Entry : PlayerHands)
+	//{
+	//	for (int i = 0; i < Entry.Value.Num(); i++)
+	//	{
+	//		UE_LOG(LogTemp, Error, TEXT("Player: %d Hand Cards: %s"), Entry.Key, *(Entry.Value[i].CardName.ToString()));
+	//	}
+	//}
 
 	// 3. Extra Cards
 	int RemainingCards = TotalCardsNum - PlayerStartingCardsNum * NumberOfPlayers;
@@ -231,9 +308,9 @@ void UClueGameTurnBasedComponent::OnPlayerMakeSuggestion(int RoleID, FString CWe
 		return;
 	}
 
-	FString DebugText = "[Server: CluelessGameLogic] Player making suggestion: [" + CWeaponID + "," + CRoleID + "," + FString::FromInt(CPlayerBlockID) + "]";
+	//FString DebugText = "[Server: CluelessGameLogic] Player making suggestion: [" + CWeaponID + "," + CRoleID + "," + FString::FromInt(CPlayerBlockID) + "]";
 
-	print(DebugText, FColor::Green);
+	//print(DebugText, FColor::Green);
 
 	FStaticMovementBlock MovementStaticInfo = UGameplayAPI::GetBlockInfo(CPlayerBlockID, GetWorld());
 
@@ -277,25 +354,35 @@ void UClueGameTurnBasedComponent::OnPlayerMakeSuggestion(int RoleID, FString CWe
 	if (GameState == nullptr)
 		return;
 
-
-	int PlayerTurnIndex = GameState->GetShowCardTurnIndex(PlayerSuggestData.SuggestionTurnCounter);
-
-    AClueless_PlayerState* ShowCardPlayer =	UGameplayAPI::GetPlayerStateFromTurnIndex(PlayerTurnIndex, GetWorld());
-
-	if (ShowCardPlayer == nullptr)
-		return;
-
-	TArray<FString> CardsToCheck;
-	CardsToCheck.Add(PlayerSuggestData.BlockID);
-	CardsToCheck.Add(PlayerSuggestData.SuspectID);
-	CardsToCheck.Add(PlayerSuggestData.WeaponID);
-
-	bool ContainCards = ShowCardPlayer->ContainsCards(CardsToCheck);
-
-	PlayerSuggestData.AllowShowCardOption = true;
+	PlayerSuggestData.AllowShowCardOption = CheckSuggestCards(PlayerSuggestData.BlockID, PlayerSuggestData.WeaponID, PlayerSuggestData.SuspectID, PlayerSuggestData.SuggestionTurnCounter);
 
 	GameState->SetPlayerSuggestData(PlayerSuggestData);
 	// 2. As each turn changes, other players will need to select a card to show, or no cards then skip suggestion // need to add those two to game actions...
 	// All data needed is inside our data now, we will then send it to 
 }
 
+// private helper function
+bool UClueGameTurnBasedComponent::CheckSuggestCards(FString BlockID, FString WeaponID, FString RoleID, int PlayerSuggestionCounter)
+{
+	ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
+
+	if (GameState == nullptr)
+		return false;
+
+
+	int PlayerTurnIndex = GameState->GetShowCardTurnIndex(PlayerSuggestionCounter);
+
+	AClueless_PlayerState* ShowCardPlayer = UGameplayAPI::GetPlayerStateFromTurnIndex(PlayerTurnIndex, GetWorld());
+
+	if (ShowCardPlayer == nullptr)
+		return false;
+	
+	TArray<FString> CardsToCheck;
+	CardsToCheck.Add(BlockID);
+	CardsToCheck.Add(RoleID);
+	CardsToCheck.Add(WeaponID);
+
+	bool ContainCards = ShowCardPlayer->ContainsCards(CardsToCheck);
+
+	return ContainCards;
+}

@@ -51,6 +51,9 @@ public:
 	UFUNCTION()
 		void OnPlayerSkipShowCard(int RoleID);
 
+	// Finish current suggestion Phase.
+	UFUNCTION()
+		void OnFinishedSuggestion();
 
 #pragma endregion Server Events Recieved From Client
 
@@ -58,5 +61,7 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+	bool CheckSuggestCards(FString BlockID, FString WeaponID, FString RoleID, int PlayerSuggestionCounter);
 
 };

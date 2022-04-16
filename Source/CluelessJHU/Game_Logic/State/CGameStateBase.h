@@ -172,9 +172,21 @@ public:
 		void SetPlayerSuggestData(FPlayerSuggestedData SuggestData)
 	{
 		SuggestionCachedData = SuggestData;
+		SuggestionCachedData.IsInShowCardPhase = true;
 
 		if (GetNetMode() == ENetMode::NM_ListenServer)		
 			OnRep_ShowCardTurnChanged();		
+	}
+
+	//
+	UFUNCTION()
+		void ResetSuggestionData()
+	{
+		SuggestionCachedData.SuggestionTurnCounter = 0;
+		SuggestionCachedData.IsInShowCardPhase = false;
+
+		if (GetNetMode() == ENetMode::NM_ListenServer)
+			OnRep_ShowCardTurnChanged();
 	}
 
 #pragma endregion Server GetAndSet Functions
@@ -204,11 +216,12 @@ public:
 
 
 #pragma endregion for Both server and client
+public:
+	UFUNCTION(NetMulticast, Reliable)
+		void OnMulticast_RPCNotifyShowedCard(const FString& RoleName, const FString& CardID);
+	void OnMulticast_RPCNotifyShowedCard_Implementation(const FString& RoleName, const FString& CardID);
+
 protected:
-
-	UFUNCTION(NetMulticast)
-		void OnMulticast_RPCNotifyShowedCard(FString CardID);
-
 	/**
 	 * @brief Data table for character and role mapping
 	*/
