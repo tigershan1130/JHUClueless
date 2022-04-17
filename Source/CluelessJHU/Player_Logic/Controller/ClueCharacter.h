@@ -112,6 +112,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
 		void OnPlayerShowCard(const FString& PlayerName, const FString& CardName);
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
+		void OnPlayerWonGame(const FString& PlayerName, const FString& Msg);
+
 #pragma endregion ServerStateChanged
 	
 

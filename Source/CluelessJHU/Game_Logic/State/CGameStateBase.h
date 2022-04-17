@@ -66,7 +66,7 @@ public:
 	 * @brief when turn has changed.
 	*/
 	UFUNCTION()
-		void OnRep_TurnChanged();
+		void OnRep_TurnInfoChanged();
 
 	// when a show card index changed.
 	UFUNCTION()
@@ -89,14 +89,13 @@ public:
 	 * @brief Get Current active players
 	*/
 	UFUNCTION()
-	TArray<ACharacter*> GetActivePlayerCharacters_Server();
+		TArray<ACharacter*> GetActivePlayerCharacters_Server();
 
 	UFUNCTION()
-	TArray<APlayerController*> GetActiveController_Server();
-
+		TArray<APlayerController*> GetActiveController_Server();
 
 	UFUNCTION()
-	TArray<FCardEntityData> GetCardsSetupData();
+		TArray<FCardEntityData> GetCardsSetupData();
 
 	UFUNCTION()
 		TArray<FCardEntityData> GetLeftoverCards()
@@ -154,7 +153,10 @@ public:
 
 	// we need to refresh our turn index for any game action update
 	UFUNCTION()
-		void UpdateCurrentTurnActions();
+		void CheckInitCurrentTurnActions();
+
+	UFUNCTION()
+		void CheckActionAfterMovement();
 
 	//
 	UFUNCTION()
@@ -211,15 +213,34 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "CluelessGameState")
 		TArray<FPlayerSetupStaticData>  GetPlayerSetupStaticData();
 
+	// get current turn
+	UFUNCTION()
+		FPlayerTurnInfo GetCurrentTurnInfo()
+	{
+		return PlayerTurnCachedData;
+	}
 
+	// clear player game action in current turn
+	UFUNCTION()
+		void ClearCurrentPlayerGameAction(EPlayerGameAction GameAction)
+	{
+		PlayerTurnCachedData.ClearGameAction(GameAction);
 
-
+		if (GetNetMode() == ENetMode::NM_ListenServer)
+			OnRep_TurnInfoChanged();
+	}
 
 #pragma endregion for Both server and client
+
 public:
 	UFUNCTION(NetMulticast, Reliable)
 		void OnMulticast_RPCNotifyShowedCard(const FString& RoleName, const FString& CardID);
 	void OnMulticast_RPCNotifyShowedCard_Implementation(const FString& RoleName, const FString& CardID);
+
+	UFUNCTION(NetMulticast, Reliable)
+		void OnMulticast_RPCNotifyGameWin(const FString& RoleName, const FString& Information);
+	void OnMulticast_RPCNotifyGameWin_Implementation(const FString& RoleName, const FString& Information);
+
 
 protected:
 	/**
@@ -260,7 +281,7 @@ protected:
 	/**
 	 * @brief When turn changed we keep player's turn using this data.
 	*/
-	UPROPERTY(ReplicatedUsing = OnRep_TurnChanged)
+	UPROPERTY(ReplicatedUsing = OnRep_TurnInfoChanged)
 		FPlayerTurnInfo PlayerTurnCachedData;
 
 	/*

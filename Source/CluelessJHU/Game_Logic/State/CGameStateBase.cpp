@@ -90,6 +90,27 @@ TArray<FPlayerSetupStaticData> ACGameStateBase::GetPlayerSetupStaticData()
 	return PlayerSetupStaticData;
 }
 
+void ACGameStateBase::OnMulticast_RPCNotifyGameWin_Implementation(const FString& RoleName, const FString& Information)
+{
+	TArray<AClueless_PlayerState*> ActivePlayerStates = UGameplayAPI::GetActivePlayerStates(GetWorld());
+
+	for (auto& Entry : ActivePlayerStates)
+	{
+		APawn* CurrentPawn = Entry->GetCurrentControlledPawn();
+
+		if (CurrentPawn->IsLocallyControlled())
+		{
+			AClueCharacter* CluelessCharacter = (AClueCharacter*)CurrentPawn;
+			if (CluelessCharacter)
+			{
+				FString Msg = " Have Won The Game!";
+				CluelessCharacter->OnPlayerWonGame(RoleName, Msg);
+			}
+		}
+	}
+
+}
+
 /* This is been called from server to client, this is executed on server and client*/
 void ACGameStateBase::OnMulticast_RPCNotifyShowedCard_Implementation(const FString& RoleName, const FString& CardID)
 {
@@ -204,35 +225,50 @@ void ACGameStateBase::UpdatePlayerControllerWithCharacterOnServer(APlayerControl
 // Refresh Turn Index.
 // When refresh turn index, also set player's game action
 // WHen Actions are set, we should toggle different GUI Options.(TODO)
-void ACGameStateBase::UpdateCurrentTurnActions()
+void ACGameStateBase::CheckInitCurrentTurnActions()
 {
-	TArray<AClueless_PlayerState*> ActivePlayerStates = UGameplayAPI::GetActivePlayerStates(GetWorld());
-
 	FPlayerSetupStaticData CurrentPlayerStaticData = UGameplayAPI::GetCurrentTurnCharacterInfo(PlayerTurnCachedData.PlayerTurnIndex, GetWorld());
 
-	//for (auto& Entry : ActivePlayerStates)
-	//{
-	//	//UE_LOG(LogTemp, Warning, TEXT("Role ID %d, CurrentPlayerID: %d"), Entry->GetRoleID(), CurrentPlayerStaticData.ID);
-	//	if (Entry->GetRoleID() == CurrentPlayerStaticData.ID - 1)
-	//	{
-	//		int BlockID = UGameplayAPI::GetBlockIDFromRoleID(Entry->GetRoleID(), GetWorld());
+	PlayerTurnCachedData.ClearAllGameAction();
+	PlayerTurnCachedData.SetAllowGameAction(EPlayerGameAction::Accusation);
+	PlayerTurnCachedData.SetAllowGameAction(EPlayerGameAction::Movement);
+	PlayerTurnCachedData.SetAllowGameAction(EPlayerGameAction::EndTurn);
 
-	//		FStaticMovementBlock StaticMovementBlockInfo = UGameplayAPI::GetBlockInfo(BlockID, GetWorld());
+	AClueless_PlayerState* ActivePlayer = UGameplayAPI::GetPlayerStateFromTurnIndex(PlayerTurnCachedData.PlayerTurnIndex, GetWorld());
 
-	//		if(!StaticMovementBlockInfo.IsHallWay && (!StaticMovementBlockInfo.IsSpawnPoint))
-	//		{ 
-	//			Entry->SetAllowGameAction(EPlayerGameAction::Suggestion);
-	//		}
-	//		Entry->SetAllowGameAction(EPlayerGameAction::Movement);
-	//		Entry->SetAllowGameAction(EPlayerGameAction::Accusation);
-	//		
-	//	}
-	//	else
-	//	{
-	//		Entry->ClearAllGameAction();
-	//	}
-	//}
+	if (ActivePlayer == nullptr)	
+		return;
 	
+	int BlockID = UGameplayAPI::GetBlockIDFromRoleID(ActivePlayer->GetRoleID(), GetWorld());
+	FStaticMovementBlock StaticMovementBlockInfo = UGameplayAPI::GetBlockInfo(BlockID, GetWorld());
+
+	if (!StaticMovementBlockInfo.IsHallWay && (!StaticMovementBlockInfo.IsSpawnPoint))
+	{
+		PlayerTurnCachedData.SetAllowGameAction(EPlayerGameAction::Suggestion);
+	}	
+
+	if (GetNetMode() == ENetMode::NM_ListenServer)
+		OnRep_TurnInfoChanged();
+}
+
+// check action after movement
+void ACGameStateBase::CheckActionAfterMovement()
+{
+	AClueless_PlayerState* ActivePlayer = UGameplayAPI::GetPlayerStateFromTurnIndex(PlayerTurnCachedData.PlayerTurnIndex, GetWorld());
+
+	if (ActivePlayer == nullptr)
+		return;
+
+	int BlockID = UGameplayAPI::GetBlockIDFromRoleID(ActivePlayer->GetRoleID(), GetWorld());
+	FStaticMovementBlock StaticMovementBlockInfo = UGameplayAPI::GetBlockInfo(BlockID, GetWorld());
+
+	if (!StaticMovementBlockInfo.IsHallWay && (!StaticMovementBlockInfo.IsSpawnPoint))
+	{
+		PlayerTurnCachedData.SetAllowGameAction(EPlayerGameAction::Suggestion);
+	}
+
+	if (GetNetMode() == ENetMode::NM_ListenServer)
+		OnRep_TurnInfoChanged();
 }
 
 // get show card Turn index
@@ -321,7 +357,6 @@ void ACGameStateBase::OnRep_GameStateChanged()
 
 	TArray<FPlayerSetupStaticData> PlayerStaticSetupData = UGameplayAPI::GetPlayerStaticSetupData(GetWorld());
 
-
 	// game state has changed, we notify all the clue character players
 	for (auto& Entry : PlayerRelationMapping.PlayerRelationMapping)
 	{
@@ -342,10 +377,8 @@ void ACGameStateBase::OnRep_GameStateChanged()
 				{
 					ClueCharacter->OnOtherCharacterTurn();
 				}
-			}
-			
+			}			
 		}
-
 		index++;
 	}
 }
@@ -354,7 +387,7 @@ void ACGameStateBase::OnRep_GameStateChanged()
 /**
  * @brief When somebody ended her turn to next player
 */
-void ACGameStateBase::OnRep_TurnChanged()
+void ACGameStateBase::OnRep_TurnInfoChanged()
 {
 	// when a Player's turn is changed
 	// We need to find the correct player to notify its
@@ -394,8 +427,6 @@ void ACGameStateBase::OnRep_ShowCardTurnChanged()
 {
 	int ActualPlayerShowCardTurn = GetShowCardTurnIndex(SuggestionCachedData.SuggestionTurnCounter);
 
-
-
 	AClueless_PlayerState* CPlayerState = UGameplayAPI::GetPlayerStateFromTurnIndex(ActualPlayerShowCardTurn, GetWorld());
 
 	if (CPlayerState == nullptr)
@@ -408,7 +439,7 @@ void ACGameStateBase::OnRep_ShowCardTurnChanged()
 		// refresh turn ui
 		//print("[Game Logic Client] Show Card Turn Is Done", FColor::Green);
 
-		OnRep_TurnChanged();
+		OnRep_TurnInfoChanged();
 		return;
 	}
 
@@ -513,7 +544,7 @@ void ACGameStateBase::ChangeGameState(ClueGameState CurrentGameState)
 
 					PlayerTurnCachedData.PlayerTurnIndex = 0;
 					// Update what this turn can do
-					UpdateCurrentTurnActions();
+					CheckInitCurrentTurnActions();
 				}
 			}
 		}
@@ -540,9 +571,9 @@ void ACGameStateBase::ChangeToNextTurnIndex()
 		PlayerTurnCachedData.PlayerTurnIndex = 0;
 
 	// when move to next players update what this turn can do.
-	UpdateCurrentTurnActions();
+	CheckInitCurrentTurnActions();
 
 	// listen server requires special networking notifications for Replication
 	if (GetNetMode() == NM_ListenServer)
-		OnRep_TurnChanged();
+		OnRep_TurnInfoChanged();
 }

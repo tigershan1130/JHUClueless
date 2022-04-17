@@ -212,15 +212,6 @@ void UClueGameTurnBasedComponent::OnGameInit()
 		}
 	}
 
-
-	//for (auto& Entry : PlayerHands)
-	//{
-	//	for (int i = 0; i < Entry.Value.Num(); i++)
-	//	{
-	//		UE_LOG(LogTemp, Error, TEXT("Player: %d Hand Cards: %s"), Entry.Key, *(Entry.Value[i].CardName.ToString()));
-	//	}
-	//}
-
 	// 3. Extra Cards
 	int RemainingCards = TotalCardsNum - PlayerStartingCardsNum * NumberOfPlayers;
 
@@ -253,6 +244,8 @@ void UClueGameTurnBasedComponent::OnPlayerMakeAccusation(int RoleID, FString CWe
 		return;
 	}
 
+	FPlayerSetupStaticData PlayerStaticData = UGameplayAPI::GetCurrentRoleData(RoleID, GetWorld());
+
 	TArray<FCardEntityData> MurderDeck = GameState->GetMurderDeck();
 
 	// go through our murder deck to check our cards
@@ -273,28 +266,33 @@ void UClueGameTurnBasedComponent::OnPlayerMakeAccusation(int RoleID, FString CWe
 		}
 	}
 
-	//TODO: make current role clear accusation action
-
 	if (CorrectCounter >= 3)
 	{
 		print("[Server: CluelessGameLogic] Player Made Correct Accusation", FColor::Green);
 
 		print("[Server: CluelessGameLogic] Notifies all Clients, Game Won!", FColor::Green);
+
+		GameState->OnMulticast_RPCNotifyGameWin(PlayerStaticData.CharacterName.ToString(), "Won");
 	}
 	else
 	{
-		print("[Server: CluelessGameLogic] Player Made False Accusation", FColor::Green);
-
-		print("[Server: CluelessGameLogic] Marking Player As Audience(Move,EndTurns)", FColor::Green);
+		print("[Server: CluelessGameLogic] Player Made False Accusation", FColor::Yellow);
+		print("[Server: CluelessGameLogic] Marking Player As Audience(Move,EndTurns)", FColor::Yellow);
 	}
-
 	
 
-	
+	//make current role clear accusation action
+	GameState->ClearCurrentPlayerGameAction(EPlayerGameAction::Accusation);
 }
 
 void UClueGameTurnBasedComponent::OnPlayerMakeSuggestion(int RoleID, FString CWeaponID, FString CRoleID)
 {
+	//Set first person to make suggestion
+	ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
+
+	if (GameState == nullptr)
+		return;
+
 	// Check if Current role is actually inside a room before he or she can make a suggestion
     ACharacter* SuggestionInstigator = UGameplayAPI::GetCharacterFromRoleID(GetWorld(), RoleID);
 
@@ -348,17 +346,13 @@ void UClueGameTurnBasedComponent::OnPlayerMakeSuggestion(int RoleID, FString CWe
 	PlayerSuggestData.WeaponID = CWeaponID;
 	PlayerSuggestData.SuggestionTurnCounter = 1;
 
-	//Set first person to make suggestion
-	ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
-
-	if (GameState == nullptr)
-		return;
-
 	PlayerSuggestData.AllowShowCardOption = CheckSuggestCards(PlayerSuggestData.BlockID, PlayerSuggestData.WeaponID, PlayerSuggestData.SuspectID, PlayerSuggestData.SuggestionTurnCounter);
 
 	GameState->SetPlayerSuggestData(PlayerSuggestData);
 	// 2. As each turn changes, other players will need to select a card to show, or no cards then skip suggestion // need to add those two to game actions...
 	// All data needed is inside our data now, we will then send it to 
+
+	GameState->ClearCurrentPlayerGameAction(EPlayerGameAction::Suggestion);
 }
 
 // private helper function

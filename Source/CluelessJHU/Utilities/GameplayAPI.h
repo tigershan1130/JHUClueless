@@ -477,6 +477,36 @@ public:
 		return FoundCard;
 	}
 
+	/* Get Current Player Turn Information*/
+	UFUNCTION(BlueprintCallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
+		static FPlayerTurnInfo GetCurrentTurnInfo(UObject* WorldContextObj)
+	{
+		FPlayerTurnInfo PlayerTurnInfo;
+		PlayerTurnInfo.PlayerGamingAction = 0;
+		PlayerTurnInfo.PlayerTurnIndex = -1;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return PlayerTurnInfo;
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return PlayerTurnInfo;
+
+		return GameState->GetCurrentTurnInfo();
+	}
+
+	/* Check if certain action is allowed*/
+	UFUNCTION(BlueprintCallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
+		static bool IsAllowedAction(EPlayerGameAction Action, UObject* WorldContextObj)
+	{
+		FPlayerTurnInfo TurnInfo = UGameplayAPI::GetCurrentTurnInfo(WorldContextObj);
+	
+		return TurnInfo.IsActionAllowed(Action);
+	}	
+
 	/**
 	* @brief For both client and server
 	*/

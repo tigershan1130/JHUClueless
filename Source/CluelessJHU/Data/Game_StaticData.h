@@ -22,10 +22,11 @@ enum ClueGameState
 UENUM(BlueprintType, meta = (Bitflags))
 enum class EPlayerGameAction : uint8
 {
-	EndTurn = 0x00,
+	None = 0x00,
 	Movement = 0x01,
 	Accusation = 0x02,
 	Suggestion = 0x04,
+	EndTurn = 0x05,
 };
 
 ENUM_CLASS_FLAGS(EPlayerGameAction);
@@ -121,6 +122,11 @@ public:
 	void ClearGameAction(EPlayerGameAction Action)
 	{
 		PlayerGamingAction &= ~(1 << static_cast<uint8>(Action));
+	}
+
+	void ClearAllGameAction()
+	{
+		PlayerGamingAction = 0;
 	}
 
 };

@@ -49,13 +49,13 @@ void UCluelessMovementComponent::BeginPlay()
 
 void UCluelessMovementComponent::RoleMakeTeleport(int BlockID, int CurrentRoleID)
 {
+	ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
+
+	if (GameState == nullptr)
+		return;
+
 	if (CluelessMovementStateCompCache == nullptr)
 	{
-		ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
-
-		if (GameState == nullptr)
-			return;
-
 		CluelessMovementStateCompCache = (UCluelessMovementStateComponent*)(GameState->GetComponentByClass(UCluelessMovementStateComponent::StaticClass()));
 	}
 
@@ -65,6 +65,7 @@ void UCluelessMovementComponent::RoleMakeTeleport(int BlockID, int CurrentRoleID
 	}
 
 	CluelessMovementStateCompCache->ServerUpdateOccupied(BlockID, CurrentRoleID);
+	GameState->CheckActionAfterMovement();
 }
 
 
@@ -127,7 +128,13 @@ void UCluelessMovementComponent::OnPlayerMakeMovement(int BlockID, int CurrentRo
 		print("[Server: CluelessGameLogic] Player Movement Validated[False] Is not Neighbor", FColor::Red);
 	}
 
+	ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
 
+	if (GameState == nullptr)
+		return;
+
+	GameState->ClearCurrentPlayerGameAction(EPlayerGameAction::Movement);
+	GameState->CheckActionAfterMovement();
 }
 
 
