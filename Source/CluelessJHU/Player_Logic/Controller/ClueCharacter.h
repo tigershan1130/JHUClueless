@@ -48,6 +48,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// set mouse active for collison 
+	UFUNCTION(BlueprintCallable, Category = "BaseCharacter")
 	void SetMouseDeprojection(bool active)
 	{
 		CheckClick = active;

@@ -173,8 +173,20 @@ void AClueCharacter::Tick(float DeltaTime)
 	
 		if (bIsHit)
 		{
-			FString Msg = "I Hit something: " + HitDetails.GetComponent()->GetName();
-			print(Msg, FColor::Blue);
+			AActor* OwnerActor = HitDetails.GetComponent()->GetOwner();
+
+			ABlockActor* BlockVisualActor = (ABlockActor*)OwnerActor;
+
+			if (BlockVisualActor != nullptr)
+			{
+				if (BlockVisualActor->BlockID > 0)
+				{
+					FString Msg = "I Hit Visual Block: " + FString::FromInt(BlockVisualActor->BlockID);
+
+					print(Msg, FColor::Blue);
+				}
+				
+			}
 		}
 
 	}

@@ -24,10 +24,12 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Block Actor")
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Block Actor")
 		void TurnOnVisualBlock();
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Block Actor")
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Block Actor")
 		void TurnOffVisualBlock();
 
+	UPROPERTY(EditAnywhere, Category = "Block Actor")
+		int BlockID;
 };

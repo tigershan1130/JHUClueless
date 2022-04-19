@@ -4,12 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "CluelessJHU/Data/Game_StaticData.h"
 #include "GameFramework/Character.h"
 #include "CluelessJHU/Player_Logic/State/Clueless_PlayerState.h"
 #include "CluelessJHU/Game_Logic/Controller/ClueGameTurnBasedComponent.h"
 #include "CluelessJHU/Game_Logic/Controller/CluelessMovementComponent.h"
 #include "Math/UnrealMathUtility.h"
+#include "CluelessJHU/Graphical_API/BlockActor.h"
 #include "CluelessJHU/Game_Logic/State/CGameStateBase.h"
 #include "GameplayAPI.generated.h"
 	
@@ -271,6 +273,33 @@ public:
 
 	}
 
+	/*Get current Player states*/
+	UFUNCTION(BlueprintCallable, Category = "Gameplay API", meta = (WorldContext = "WorldContextObj"))
+		static AClueless_PlayerState* GetCurrentControlledPlayerState(UObject* WorldContextObj)
+	{
+		AClueless_PlayerState* ClueCharacter = nullptr;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return ClueCharacter;
+
+		TArray<AClueless_PlayerState*> ActivePlayerStates = GetActivePlayerStates(WorldContextObj);
+
+		for (auto& Entry : ActivePlayerStates)
+		{
+			APawn* CPawn = Entry->GetCurrentControlledPawn();
+
+			if (CPawn->IsLocallyControlled())
+			{
+				ClueCharacter = Entry;
+			}
+		}
+
+		return ClueCharacter;
+
+	}
+
 	/* Get current */
 	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
 		static FPlayerSuggestedData GetSuggestCachedData(UObject* WorldContextObj)
@@ -295,7 +324,7 @@ public:
 	* Get Game State, Readonly
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
-		static 	ClueGameState GetCurrentGameState(UObject* WorldContextObj)
+		static ClueGameState GetCurrentGameState(UObject* WorldContextObj)
 	{
 		TArray<FPlayerSetupStaticData> PlayerStaticSetupData;
 
@@ -377,7 +406,7 @@ public:
 	* @brief For both client and server
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
-	static FPlayerSetupStaticData GetCurrentTurnCharacterInfo(int CurrentTurnIndex , UObject* WorldContextObj)
+		static FPlayerSetupStaticData GetCurrentTurnCharacterInfo(int CurrentTurnIndex , UObject* WorldContextObj)
 	{
 		FPlayerSetupStaticData PlayerSetupData;
 
@@ -880,5 +909,62 @@ public:
 	}
 
 #pragma endregion Server Calls
+
+#pragma region Client Calls
+	/*Get current controlled player neighbor blocks*/
+	UFUNCTION(BlueprintCallable, Category = "GamePlay Client API", meta = (WorldContext = "WorldContextObj"))
+		static TArray<ABlockActor*> GetCurrentPlayerNeighborVisualBlocks(UObject* WorldContextObj)
+	{
+		TArray<ABlockActor*> BlockActors;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return BlockActors;
+
+		AClueless_PlayerState* CurrentPlayerState = GetCurrentControlledPlayerState(WorldContextObj);
+
+		if (CurrentPlayerState == nullptr)
+			return BlockActors;
+
+
+		int CurrentRoleID = CurrentPlayerState->GetRoleID();
+
+		int CurrentLocationBlockID = GetBlockIDFromRoleID(CurrentRoleID, WorldContextObj);
+
+		TArray<int> NeighborBlocks;
+
+		if (CurrentLocationBlockID > 0)
+		{
+			FStaticMovementBlock BlockInfo = GetBlockInfo(CurrentLocationBlockID, WorldContextObj);
+
+			NeighborBlocks = BlockInfo.NeighborBlocks;
+		}
+
+		// GET all blocks in scene
+		TArray<AActor*> BlockVisualActors;
+		UGameplayStatics::GetAllActorsOfClass(WorldContextObj, ABlockActor::StaticClass(), BlockVisualActors);
+
+		for (auto& Entry : BlockVisualActors)
+		{
+			ABlockActor* CurrentVisualBlock = (ABlockActor*)Entry;
+
+			if (CurrentVisualBlock)
+			{
+				int VisualBlockID = CurrentVisualBlock->BlockID;
+
+				if (NeighborBlocks.Contains(VisualBlockID))
+				{
+					BlockActors.Add(CurrentVisualBlock);
+				}
+			}
+		}
+
+		return BlockActors;
+	}
+
+
+
+#pragma endregion Client Calls
 
 };
