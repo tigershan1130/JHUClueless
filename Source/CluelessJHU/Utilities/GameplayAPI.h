@@ -244,6 +244,33 @@ public:
 		return nullptr;
 	}
 
+	/*Get current Controlled character*/
+	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
+		static AClueCharacter* GetCurrentControlledCharacter(UObject* WorldContextObj)
+	{
+		AClueCharacter* ClueCharacter = nullptr;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return ClueCharacter;
+
+		TArray<AClueless_PlayerState*> ActivePlayerStates = GetActivePlayerStates(WorldContextObj);
+		
+		for (auto& Entry : ActivePlayerStates)
+		{
+			APawn* CPawn = Entry->GetCurrentControlledPawn();
+
+			if (CPawn->IsLocallyControlled())
+			{
+				ClueCharacter = (AClueCharacter*)CPawn;
+			}
+		}
+
+		return ClueCharacter;
+
+	}
+
 	/* Get current */
 	UFUNCTION(BlueprintCallable, Category = "GamePlay API", meta = (WorldContext = "WorldContextObj"))
 		static FPlayerSuggestedData GetSuggestCachedData(UObject* WorldContextObj)

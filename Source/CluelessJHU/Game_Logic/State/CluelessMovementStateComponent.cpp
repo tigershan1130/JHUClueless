@@ -73,8 +73,8 @@ TArray<FDynamicMovementEntry> UCluelessMovementStateComponent::GetDynamicMovment
 
 	if (DynamicMovementInfo.DynamicMovementInfoCache.Num() <= 0)
 	{
-		if (GIsServer) // only server can populate this data.
-		{
+		//if (GIsServer) // only server can populate this data.
+		//{
 			UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(GetWorld());
 
 			UStaticDataSubSystem* StaticDataGameSystem = GameInstance->GetSubsystem<UStaticDataSubSystem>();
@@ -85,6 +85,11 @@ TArray<FDynamicMovementEntry> UCluelessMovementStateComponent::GetDynamicMovment
 
 				UDataTable* MovementSetupStaticData = UStaticDataSubSystem::GetDataTableByName(TEXT("MovementSetup"));
 
+
+				if (MovementSetupStaticData == nullptr)
+				{
+					print("Datatable not found!", FColor::Red);
+				}
 
 				FString _Context;
 
@@ -104,7 +109,7 @@ TArray<FDynamicMovementEntry> UCluelessMovementStateComponent::GetDynamicMovment
 				// Reset json for notification
 				SetDynamicInfo_Server(DynamicMovementInfo);
 			}
-		}
+		//}
 	}
 
 	return DynamicMovementInfo.DynamicMovementInfoCache;

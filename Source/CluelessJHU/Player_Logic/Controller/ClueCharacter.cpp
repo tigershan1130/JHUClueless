@@ -5,7 +5,11 @@
 #include "Kismet/GameplayStatics.h"
 #include "CluelessJHU/Utilities/GameplayAPI.h"
 #include "CluelessJHU/Player_Logic/State/Clueless_PlayerState.h"
+#include "CollisionQueryParams.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
 #include "CluelessJHU/Game_Logic/State/CGameStateBase.h"
+
+#define print(text, color) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, color,text)
 
 // Sets default values
 AClueCharacter::AClueCharacter()
@@ -24,6 +28,8 @@ void AClueCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	SetReplicates(true);
+
+	//SetMouseDeprojection(true);
 }
 
 // Check Server RPC set Game Start Implementation
@@ -130,6 +136,48 @@ void AClueCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	ClientCheckPlayerReady();
+
+	if (CheckClick && IsLocallyControlled()) 
+	{
+		FVector2D MousePostion = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
+
+		UGameViewportClient* GameViewPort = GetWorld()->GetGameViewport();
+
+		float DPIScale = GameViewPort->GetDPIScale();
+
+		MousePostion = MousePostion * UWidgetLayoutLibrary::GetViewportScale(GameViewPort);
+
+		FVector WorldPosition;
+		FVector WorldDirection;
+
+		APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+
+		UGameplayStatics::DeprojectScreenToWorld(PC, MousePostion, WorldPosition, WorldDirection);
+
+		FCollisionQueryParams TraceParams(FName(TEXT("InterTrace")), true, NULL);
+		TraceParams.bTraceComplex = true;
+		TraceParams.bReturnPhysicalMaterial = true;
+
+		FVector EndPosition = WorldPosition + (WorldDirection * 10000);
+
+		FHitResult HitDetails = FHitResult(ForceInit);
+
+		bool bIsHit = GetWorld()->LineTraceSingleByChannel(
+			HitDetails,
+			WorldPosition,
+			EndPosition,
+			ECC_PhysicsBody,
+			TraceParams
+		);
+
+	
+		if (bIsHit)
+		{
+			FString Msg = "I Hit something: " + HitDetails.GetComponent()->GetName();
+			print(Msg, FColor::Blue);
+		}
+
+	}
 
 }
 

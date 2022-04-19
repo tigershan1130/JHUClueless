@@ -47,7 +47,13 @@ public:
 	// Called to bind functionality to input, This is client only.
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-#pragma region ServerStateChanged
+	// set mouse active for collison 
+	void SetMouseDeprojection(bool active)
+	{
+		CheckClick = active;
+	}
+
+#pragma region ServerStateChanged ClientSide
 	/*
 	* this will be called by Player State to notify that character is ready to initialize data. Server->Client
 	*/
@@ -112,6 +118,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
 		void OnPlayerShowCard(const FString& PlayerName, const FString& CardName);
 
+	// when a player won the game, we send message
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
 		void OnPlayerWonGame(const FString& PlayerName, const FString& Msg);
 
@@ -294,6 +301,7 @@ private:
 	UFUNCTION()
 		void ClientCheckPlayerReady();
 
-
+	UPROPERTY()
+		bool CheckClick = false;
 
 };
