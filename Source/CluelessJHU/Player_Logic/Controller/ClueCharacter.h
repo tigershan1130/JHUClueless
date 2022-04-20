@@ -54,6 +54,8 @@ public:
 		CheckClick = active;
 	}
 
+	void OnLeftMouseClick();
+
 #pragma region ServerStateChanged ClientSide
 	/*
 	* this will be called by Player State to notify that character is ready to initialize data. Server->Client

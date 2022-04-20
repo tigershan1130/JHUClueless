@@ -21,7 +21,6 @@ AClueCharacter::AClueCharacter()
 	bReplicates = true;
 
 }
-
 // Called when the game starts or when spawned
 void AClueCharacter::BeginPlay()
 {
@@ -136,8 +135,11 @@ void AClueCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	ClientCheckPlayerReady();
+}
 
-	if (CheckClick && IsLocallyControlled()) 
+void AClueCharacter::OnLeftMouseClick()
+{
+	if (CheckClick && IsLocallyControlled())
 	{
 		FVector2D MousePostion = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
 
@@ -170,7 +172,7 @@ void AClueCharacter::Tick(float DeltaTime)
 			TraceParams
 		);
 
-	
+
 		if (bIsHit)
 		{
 			AActor* OwnerActor = HitDetails.GetComponent()->GetOwner();
@@ -179,23 +181,36 @@ void AClueCharacter::Tick(float DeltaTime)
 
 			if (BlockVisualActor != nullptr)
 			{
-				if (BlockVisualActor->BlockID > 0)
+				if (BlockVisualActor->BlockID > 0 && BlockVisualActor->BlockID <= 55)
 				{
 					FString Msg = "I Hit Visual Block: " + FString::FromInt(BlockVisualActor->BlockID);
 
-					print(Msg, FColor::Blue);
+					TArray<ABlockActor*> VisualBlocks = UGameplayAPI::GetCurrentPlayerNeighborVisualBlocks(GetWorld());
+
+					TArray<int> VisualBlockIDs;
+
+					for (auto& Entry : VisualBlocks)
+					{
+						VisualBlockIDs.Add(Entry->BlockID);
+					}
+
+					if (VisualBlockIDs.Contains(BlockVisualActor->BlockID))
+					{
+						ServerRPCMakeMovement(BlockVisualActor->BlockID);
+						print(Msg, FColor::Blue);
+					}
 				}
-				
 			}
 		}
-
 	}
-
 }
 
 // Called to bind functionality to input
 void AClueCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	// Bind Mouse left button
+	InputComponent->BindAction("MouseLeftClick", IE_Pressed, this, &AClueCharacter::OnLeftMouseClick);
 
 }
