@@ -8,6 +8,7 @@
 #include "CluelessJHU/Data/Game_StaticData.h"
 #include "GameFramework/Character.h"
 #include "CluelessJHU/Player_Logic/State/Clueless_PlayerState.h"
+#include "CluelessJHU/Player_Logic/Controller/CPawn.h"
 #include "CluelessJHU/Game_Logic/Controller/ClueGameTurnBasedComponent.h"
 #include "CluelessJHU/Game_Logic/Controller/CluelessMovementComponent.h"
 #include "Math/UnrealMathUtility.h"
@@ -963,7 +964,40 @@ public:
 		return BlockActors;
 	}
 
+	UFUNCTION(BlueprintCallable, Category = "GamePlay Client API", meta = (WorldContext = "WorldContextObj"))
+		static ACPawn* GetCurrentControlledVisualPawn(UObject* WorldContextObj)
+	{
+		ACPawn* FoundVisualPawn = nullptr;
+		TArray<AActor*> VisualPawns;
 
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return FoundVisualPawn;
+
+		AClueless_PlayerState* CurrentPlayerState = GetCurrentControlledPlayerState(WorldContextObj);
+
+		if (CurrentPlayerState == nullptr)
+			return FoundVisualPawn;
+
+		UGameplayStatics::GetAllActorsOfClass(World, ACPawn::StaticClass(), VisualPawns);
+
+
+		for (auto& Entry : VisualPawns)
+		{
+			ACPawn* CurrentEntryPawn = (ACPawn*)Entry;
+
+			if (CurrentEntryPawn && CurrentEntryPawn->RoleID == CurrentPlayerState->GetRoleID())
+			{
+				FoundVisualPawn = CurrentEntryPawn;
+			}
+
+		}
+
+
+
+		return FoundVisualPawn;
+	}
 
 #pragma endregion Client Calls
 
