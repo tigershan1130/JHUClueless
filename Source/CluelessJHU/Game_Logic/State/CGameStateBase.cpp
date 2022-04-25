@@ -26,7 +26,7 @@ void ACGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME_CONDITION(ACGameStateBase, HostReadyToStartGame, COND_OwnerOnly);
+	DOREPLIFETIME(ACGameStateBase, HostReadyToStartGame);
 	DOREPLIFETIME(ACGameStateBase, PlayerRelationMapping);
 	DOREPLIFETIME(ACGameStateBase, CGameState);
 	DOREPLIFETIME(ACGameStateBase, LeftoverDeck);
@@ -214,9 +214,10 @@ void ACGameStateBase::UpdatePlayerControllerWithCharacterOnServer(APlayerControl
 	// if current active characters is bigger than or equal to 3, we can start our game if I am the host
 	if (ActiveCharacters.Num() >= 3)
 	{
+		HostReadyToStartGame = true;
+
 		if (GetNetMode() == NM_ListenServer)
 		{
-			HostReadyToStartGame = true;
 			OnRep_GameStartedChanged();
 		}
 	}
@@ -301,8 +302,8 @@ void ACGameStateBase::OnRep_GameStartedChanged()
 		for (auto& Entry : PlayerRelationMapping.PlayerRelationMapping)
 		{
 			AClueCharacter* ClueCharacter = (AClueCharacter*)Entry.Character;
-
-			if (ClueCharacter != nullptr)
+			
+			if (ClueCharacter != nullptr && Entry.Index == 0)
 			{
 				if (ClueCharacter->IsLocallyControlled())
 					ClueCharacter->OnHostReadyStartGame();
