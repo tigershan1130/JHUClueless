@@ -24,19 +24,20 @@ public class OnlineSubsystemPython : ModuleRules
 
         PublicDependencyModuleNames.AddRange(
             new string[] {
-                "OnlineSubsystemUtils", "Core", "CoreUObject", "Engine", "Slate", "SlateCore"
-            }
+                "OnlineSubsystemUtils", "Core", "CoreUObject", "Engine", "Slate", "SlateCore", "NetCore"
+			}
             );
 
         PrivateDependencyModuleNames.AddRange(
 			new string[] {
-				"Core", 
+				"Core",
+				"NetCore",
 				"CoreUObject", 
 				"Engine", 
 				"Sockets", 
 				"OnlineSubsystem", 
 				"Json",
-                "Http"
+                "HTTP"
 			}
 			);
 	}

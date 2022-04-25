@@ -15,7 +15,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/CoreOnline.h"
+#include "Online/CoreOnline.h"
 #include "Misc/ScopeLock.h"
 #include "OnlineSessionSettings.h"
 #include "Interfaces/OnlineSessionInterface.h"

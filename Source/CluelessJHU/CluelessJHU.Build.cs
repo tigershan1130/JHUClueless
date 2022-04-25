@@ -8,9 +8,9 @@ public class CluelessJHU : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "StaticDataTableManager", "JsonUtilities", "Json", "UMG" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "StaticDataTableManager", "JsonUtilities", "Json", "UMG", "NetCore" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] {"StaticDataTableManager" , "JsonUtilities" });
+		PrivateDependencyModuleNames.AddRange(new string[] {"StaticDataTableManager" , "JsonUtilities"});
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

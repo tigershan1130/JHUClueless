@@ -26,6 +26,7 @@ public class ChatSystem : ModuleRules
 			new string[]
 			{
 				"Core",
+				"NetCore",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -35,6 +36,7 @@ public class ChatSystem : ModuleRules
 			new string[]
 			{
 				"CoreUObject",
+				"NetCore",
 				"Engine",
 				"Slate",
 				"SlateCore",

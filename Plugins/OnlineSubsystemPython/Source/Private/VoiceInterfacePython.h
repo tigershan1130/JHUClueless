@@ -13,7 +13,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 */
 
 #include "VoiceInterfaceImpl.h"
-#include "UObject/CoreOnline.h"
+#include "Online/CoreOnline.h"
 #include "OnlineSubsystemTypes.h"
 #include "Interfaces/VoiceInterface.h"
 #include "Net/VoiceDataCommon.h"
