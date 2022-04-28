@@ -964,6 +964,7 @@ public:
 		return BlockActors;
 	}
 
+	/* which visual pawn is currently controlled*/
 	UFUNCTION(BlueprintCallable, Category = "GamePlay Client API", meta = (WorldContext = "WorldContextObj"))
 		static ACPawn* GetCurrentControlledVisualPawn(UObject* WorldContextObj)
 	{
@@ -998,6 +999,126 @@ public:
 
 		return FoundVisualPawn;
 	}
+
+	
+	/* Get Cards that's allowed to be suggested */
+	UFUNCTION(BlueprintCallable, Category = "GamePlay Client API", meta = (WorldContext = "WorldContextObj"))
+		static TArray<FCardEntityData> GetAllowedSuggestedCards(UObject* WorldContextObj)
+	{
+		AClueCharacter* CurrentCharacter =	GetCurrentControlledCharacter(WorldContextObj);
+
+		TArray<FCardEntityData> CurrentPlayerCards;
+
+		if (CurrentCharacter)
+		{
+			CurrentPlayerCards = GetCurrentPlayerCards((ACharacter*)CurrentCharacter, WorldContextObj);
+		}
+
+		FPlayerSuggestedData CurrentSuggestionData = GetSuggestCachedData(WorldContextObj);
+
+		TArray<FCardEntityData> AllowedSuggestedCards;
+
+		for (int i = 0; i < CurrentPlayerCards.Num(); i++)
+		{
+			if (CurrentPlayerCards[i].CardID == CurrentSuggestionData.BlockID || CurrentPlayerCards[i].CardID == CurrentSuggestionData.SuspectID || CurrentPlayerCards[i].CardID == CurrentSuggestionData.WeaponID)
+			{
+				AllowedSuggestedCards.Add(CurrentPlayerCards[i]);
+			}
+		}
+
+		return AllowedSuggestedCards;
+	}
+
+	// get all weapon cards
+	UFUNCTION(BlueprintCallable, Category = "GamePlay Client API", meta = (WorldContext = "WorldContextObj"))
+		static TArray<FCardEntityData> GetWeaponCards(UObject* WorldContextObj)
+	{
+		TArray<FCardEntityData> WeaponCards;
+
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return WeaponCards;
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return WeaponCards;
+
+
+		TArray<FCardEntityData> AllCards = GameState->GetCardsSetupData();
+
+		for (int i = 0; i < AllCards.Num(); i++)
+		{
+			if (AllCards[i].Type == 1)
+			{
+				WeaponCards.Add(AllCards[i]);
+			}
+		}
+
+		return WeaponCards;
+	}
+
+	// get all player cards
+	UFUNCTION(BlueprintCallable, Category = "GamePlay Client API", meta = (WorldContext = "WorldContextObj"))
+		static TArray<FCardEntityData> GetPlayerCards(UObject* WorldContextObj)
+	{
+		TArray<FCardEntityData> PlayerCards;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return PlayerCards;
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return PlayerCards;
+
+		TArray<FCardEntityData> AllCards = GameState->GetCardsSetupData();
+
+		for (int i = 0; i < AllCards.Num(); i++)
+		{
+			if (AllCards[i].Type == 0)
+			{
+				PlayerCards.Add(AllCards[i]);
+			}
+		}
+
+		return PlayerCards;
+	}
+
+	// get all room cards
+	UFUNCTION(BlueprintCallable, Category = "GamePlay Client API", meta = (WorldContext = "WorldContextObj"))
+		static TArray<FCardEntityData> GetRoomCards(UObject* WorldContextObj)
+	{
+		TArray<FCardEntityData> RoomCards;
+
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return RoomCards;
+
+		ACGameStateBase* GameState = World->GetGameState<ACGameStateBase>();
+
+		if (GameState == nullptr)
+			return RoomCards;
+
+
+		TArray<FCardEntityData> AllCards = GameState->GetCardsSetupData();
+
+		for (int i = 0; i < AllCards.Num(); i++)
+		{
+			if (AllCards[i].Type == 2)
+			{
+				RoomCards.Add(AllCards[i]);
+			}
+		}
+
+		return RoomCards;
+	}
+
 
 #pragma endregion Client Calls
 

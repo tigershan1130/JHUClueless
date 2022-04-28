@@ -194,7 +194,7 @@ public:
 		ServerRPCMakeSuggestion(WeaponID, RoleID);
 	}
 
-	UFUNCTION(Exec)
+	UFUNCTION(Exec, BlueprintCallable)
 		void FunctionTestMakeAccusationByName(FString Suspect, FString Weapon, FString Location)
 	{
 		ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();
@@ -222,7 +222,7 @@ public:
 		ServerRPCMakeAccusation(WeaponID, RoleID, RoomID);
 	}
 
-	UFUNCTION(Exec)
+	UFUNCTION(Exec, BlueprintCallable)
 		void FunctionTestMakeSuggestionByName(FString Suspect, FString Weapon)
 	{
 		ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();

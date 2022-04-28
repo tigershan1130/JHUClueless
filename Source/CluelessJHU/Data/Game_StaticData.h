@@ -78,12 +78,15 @@ struct FPlayerSuggestedData
 	GENERATED_USTRUCT_BODY();
 public:
 
+	// this is card IDs not relation IDs
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FString SuspectID;
 
+	// this is card IDs not relation IDs
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FString BlockID;
 
+	// this is card IDs not relation IDs
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FString WeaponID;
 
