@@ -6,6 +6,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "CluelessJHU/Data/Game_StaticData.h"
+#include "StaticDataTableManager/Public/StaticDataSubSystem.h"
 #include "GameFramework/Character.h"
 #include "CluelessJHU/Player_Logic/State/Clueless_PlayerState.h"
 #include "CluelessJHU/Player_Logic/Controller/CPawn.h"
@@ -1119,7 +1120,42 @@ public:
 		return RoomCards;
 	}
 
+	/* Get visual card data */
+	UFUNCTION(BlueprintCallable, Category = "GamePlay Client API", meta = (WorldContext = "WorldContextObj"))
+		static FVisualCardData GetVisualCardInfoData(FString CardID, UObject* WorldContextObj)
+	{
+		FVisualCardData VisualCardData;
 
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObj, EGetWorldErrorMode::LogAndReturnNull);
+
+		if (!World)
+			return VisualCardData;
+
+		UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(World);	
+
+		UStaticDataSubSystem* StaticDataGameSystem = GameInstance->GetSubsystem<UStaticDataSubSystem>();
+
+		StaticDataGameSystem->InitStaticData();
+
+		UDataTable* VisualCardsData = UStaticDataSubSystem::GetDataTableByName(TEXT("CardsVisualData"));
+
+		FString _Context;
+
+		for (auto& RowName : VisualCardsData->GetRowNames())
+		{
+			if (RowName.ToString() == CardID)
+			{
+				FVisualCardData* RowData = VisualCardsData->FindRow<FVisualCardData>(RowName, _Context);
+			
+				if (RowData)
+				{
+					VisualCardData = *RowData;
+				}
+			}
+		}
+
+		return VisualCardData;
+	}
 #pragma endregion Client Calls
 
 };

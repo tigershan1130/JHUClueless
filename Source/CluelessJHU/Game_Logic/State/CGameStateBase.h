@@ -226,8 +226,8 @@ public:
 	{
 		PlayerTurnCachedData.ClearGameAction(GameAction);
 
-		if (GetNetMode() == ENetMode::NM_ListenServer)
-			OnRep_TurnInfoChanged();
+		//if (GetNetMode() == ENetMode::NM_ListenServer)
+		//	OnRep_TurnInfoChanged();
 	}
 
 #pragma endregion for Both server and client

@@ -247,13 +247,13 @@ public:
 		ServerRPCMakeSuggestion(WeaponID, RoleID);
 	}
 
-	UFUNCTION(Exec)
+	UFUNCTION(Exec, BlueprintCallable)
 		void FunctionTestSkipShowCard()
 	{
 		ServerRPCSkipShowCard();
 	}
 
-	UFUNCTION(Exec)
+	UFUNCTION(Exec, BlueprintCallable)
 		void FunctionTestShowCardByName(FString CardName)
 	{
 		ACGameStateBase* GameState = GetWorld()->GetGameState<ACGameStateBase>();

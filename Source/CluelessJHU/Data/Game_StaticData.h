@@ -31,7 +31,19 @@ enum class EPlayerGameAction : uint8
 
 ENUM_CLASS_FLAGS(EPlayerGameAction);
 
+USTRUCT(BlueprintType, Blueprintable)
+struct FVisualCardData : public FTableRowBase
+{
+	GENERATED_USTRUCT_BODY();
 
+public:
+	// this is same ID as the RowName
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FString CardID;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UTexture2D* texture;
+};
 
 USTRUCT(BlueprintType, Blueprintable)
 struct FPlayerSetupStaticData : public FTableRowBase
