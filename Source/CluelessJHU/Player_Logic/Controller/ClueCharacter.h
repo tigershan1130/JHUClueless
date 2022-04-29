@@ -104,6 +104,12 @@ public:
 		void OnHostReadyStartGame();
 
 	/*
+	* @brief when player becomes an audiene
+	*/
+	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
+		void OnBecomeAudience();
+
+	/*
 	* @brief When character is at his/her turn.
 	*/
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
@@ -119,11 +125,15 @@ public:
 
 	// When user show a card to everyone
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
-		void OnPlayerShowCard(const FString& PlayerName, const FString& CardName);
+		void OnPlayerShowCardMsg(const FString& PlayerName, const FString& CardName);
 
 	// when a player won the game, we send message
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
-		void OnPlayerWonGame(const FString& PlayerName, const FString& Msg);
+		void OnPlayerWonGameMsg(const FString& PlayerName, const FString& Msg);
+
+	// when a player marked as audience
+	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
+		void OnPlayerMarkedAsAudienceMsg(const FString& PlayerName, const FString& Msg);
 
 #pragma endregion ServerStateChanged
 	

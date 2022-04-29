@@ -90,6 +90,7 @@ TArray<FPlayerSetupStaticData> ACGameStateBase::GetPlayerSetupStaticData()
 	return PlayerSetupStaticData;
 }
 
+/* This is been called from server to client, this is executed on server and client*/
 void ACGameStateBase::OnMulticast_RPCNotifyGameWin_Implementation(const FString& RoleName, const FString& Information)
 {
 	TArray<AClueless_PlayerState*> ActivePlayerStates = UGameplayAPI::GetActivePlayerStates(GetWorld());
@@ -104,11 +105,31 @@ void ACGameStateBase::OnMulticast_RPCNotifyGameWin_Implementation(const FString&
 			if (CluelessCharacter)
 			{
 				FString Msg = " Have Won The Game!";
-				CluelessCharacter->OnPlayerWonGame(RoleName, Msg);
+				CluelessCharacter->OnPlayerWonGameMsg(RoleName, Msg);
 			}
 		}
 	}
 
+}
+
+/* This is been called from server to client, this is executed on server and client*/
+void ACGameStateBase::OnMulticast_RPCNotifyMarkedAsAudience_Implementation(const FString& RoleName, const FString& Information)
+{
+	TArray<AClueless_PlayerState*> ActivePlayerStates = UGameplayAPI::GetActivePlayerStates(GetWorld());
+
+	for (auto& Entry : ActivePlayerStates)
+	{
+		APawn* CurrentPawn = Entry->GetCurrentControlledPawn();
+
+		if (CurrentPawn->IsLocallyControlled())
+		{
+			AClueCharacter* CluelessCharacter = (AClueCharacter*)CurrentPawn;
+			if (CluelessCharacter)
+			{
+				CluelessCharacter->OnPlayerMarkedAsAudienceMsg(RoleName, Information);
+			}
+		}
+	}
 }
 
 /* This is been called from server to client, this is executed on server and client*/
@@ -134,7 +155,7 @@ void ACGameStateBase::OnMulticast_RPCNotifyShowedCard_Implementation(const FStri
 			if (CluelessCharacter)
 			{
 				FString Msg = " Showed Card: " + CardData.CardName.ToString();
-				CluelessCharacter->OnPlayerShowCard(RoleName, Msg);
+				CluelessCharacter->OnPlayerShowCardMsg(RoleName, Msg);
 			}
 		}
 	}

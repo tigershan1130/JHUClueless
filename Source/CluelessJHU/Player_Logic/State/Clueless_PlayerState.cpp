@@ -28,6 +28,7 @@ void AClueless_PlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	//DOREPLIFETIME(AClueless_PlayerState, CurrentGameAction);
 	//TODO: FIx bug, currently all players cards all send to each of the clients
 	// So technically this can be send to other players, so we only need to rep_notify to owner.
+	DOREPLIFETIME(AClueless_PlayerState, IsAudience);
 	DOREPLIFETIME(AClueless_PlayerState, HandCards);
 
 }
@@ -62,6 +63,18 @@ void AClueless_PlayerState::OnRep_CardsDistributed()
 
 		if (Character != nullptr)		
 			Character->OnPlayerCardsUpdated();		
+	}
+}
+
+void AClueless_PlayerState::OnRep_BecomeAudience()
+{
+
+	if (CurrentControlledPawn != nullptr)
+	{
+		AClueCharacter* Character = (AClueCharacter*)CurrentControlledPawn;
+
+		if (Character != nullptr)
+			Character->OnBecomeAudience();
 	}
 }
 

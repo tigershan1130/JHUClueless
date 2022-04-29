@@ -244,6 +244,14 @@ void UClueGameTurnBasedComponent::OnPlayerMakeAccusation(int RoleID, FString CWe
 		return;
 	}
 
+	AClueless_PlayerState* CurrentPlayerState = UGameplayAPI::GetPlayerStateFromRoleID(RoleID, GetWorld());
+
+	if (CurrentPlayerState->GetIsAudience())
+	{
+		UE_LOG(LogTemp, Error, TEXT("[CluelessGameLogic] Bad Action, Current Player is Audience"));
+		return;
+	}
+
 	FPlayerSetupStaticData PlayerStaticData = UGameplayAPI::GetCurrentRoleData(RoleID, GetWorld());
 
 	TArray<FCardEntityData> MurderDeck = GameState->GetMurderDeck();
@@ -278,6 +286,13 @@ void UClueGameTurnBasedComponent::OnPlayerMakeAccusation(int RoleID, FString CWe
 	{
 		print("[Server: CluelessGameLogic] Player Made False Accusation", FColor::Yellow);
 		print("[Server: CluelessGameLogic] Marking Player As Audience(Move,EndTurns)", FColor::Yellow);
+
+		GameState->OnMulticast_RPCNotifyMarkedAsAudience(PlayerStaticData.CharacterName.ToString(), "Marked As Audience");
+
+		if (CurrentPlayerState)
+		{
+			CurrentPlayerState->MarkAsAudience();
+		}
 	}
 	
 
@@ -297,6 +312,9 @@ void UClueGameTurnBasedComponent::OnPlayerMakeSuggestion(int RoleID, FString CWe
     ACharacter* SuggestionInstigator = UGameplayAPI::GetCharacterFromRoleID(GetWorld(), RoleID);
 
 	AClueless_PlayerState* CPlayerState = SuggestionInstigator->GetPlayerState<AClueless_PlayerState>();
+
+	if (CPlayerState->GetIsAudience())
+		return;
 
 	int CPlayerBlockID = UGameplayAPI::GetBlockIDFromRoleID(CPlayerState->GetRoleID(), GetWorld());
 

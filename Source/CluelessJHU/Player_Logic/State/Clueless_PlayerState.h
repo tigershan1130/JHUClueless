@@ -38,6 +38,9 @@ public:
 
 	UFUNCTION()
 		virtual void OnRep_CardsDistributed();
+
+	UFUNCTION()
+		virtual void OnRep_BecomeAudience();
 #pragma endregion Recieves message from server, these states have changed.
 
 
@@ -54,6 +57,17 @@ public:
 
 	UFUNCTION()
 		void SetCardsInHand(TArray<FCardEntityData> CardsForThisPlayer);
+
+	UFUNCTION()
+		void MarkAsAudience()
+	{
+		IsAudience = true;
+
+		if (GetNetMode() == ENetMode::NM_ListenServer)
+		{
+			OnRep_BecomeAudience();
+		}
+	}
 
 	UFUNCTION()
 		TArray<FCardEntityData> GetCardsInHand()
@@ -106,6 +120,12 @@ public:
 	}
 
 
+	UFUNCTION(BlueprintCallable)
+		bool GetIsAudience()
+	{
+		return IsAudience;
+	}
+
 #pragma endregion Server and Client Functions
 
 protected:
@@ -133,5 +153,9 @@ protected:
 	*/
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_CardsDistributed)
 		TArray<FCardEntityData> HandCards;
+
+	// if it is audience, then bunch of stuff can't be done.
+	UPROPERTY(ReplicatedUsing = OnRep_BecomeAudience)
+		bool IsAudience;
 	
 };

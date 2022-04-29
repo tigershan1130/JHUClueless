@@ -1156,6 +1156,7 @@ public:
 
 		return VisualCardData;
 	}
+
 #pragma endregion Client Calls
 
 };

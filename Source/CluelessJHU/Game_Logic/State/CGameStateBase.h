@@ -241,6 +241,9 @@ public:
 		void OnMulticast_RPCNotifyGameWin(const FString& RoleName, const FString& Information);
 	void OnMulticast_RPCNotifyGameWin_Implementation(const FString& RoleName, const FString& Information);
 
+	UFUNCTION(NetMulticast, Reliable)
+		void OnMulticast_RPCNotifyMarkedAsAudience(const FString& RoleName, const FString& Information);
+	void OnMulticast_RPCNotifyMarkedAsAudience_Implementation(const FString& RoleName, const FString& Information);
 
 protected:
 	/**
