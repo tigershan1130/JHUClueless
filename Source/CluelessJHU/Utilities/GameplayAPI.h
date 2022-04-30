@@ -679,14 +679,20 @@ public:
 		TArray<FPlayerCharacterRelationEntry> PlayerRelationMapping = GameState->GetCharatersRelationMapping();
 
 		for (auto& Entry : PlayerRelationMapping)
-		{
-			APlayerState* PlayerState = Entry.Character->GetPlayerState();
+		{			
+			if (Entry.Character->GetController() == nullptr)
+			{
+				continue;
+			}
+
+			APlayerState* PlayerState = Entry.Character->GetPlayerState(); //TODO: Tiger when somebody disconnects, this will crash the game.
 			if (PlayerState != nullptr)
 			{
 				AClueless_PlayerState* CPlayerState = (AClueless_PlayerState*)PlayerState;
 				if (CPlayerState)
 					ActivePlayerStates.Add(CPlayerState);
 			}
+
 		}
 
 		return ActivePlayerStates;		
