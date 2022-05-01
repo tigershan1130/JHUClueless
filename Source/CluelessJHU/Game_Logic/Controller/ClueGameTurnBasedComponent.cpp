@@ -113,6 +113,28 @@ void UClueGameTurnBasedComponent::OnFinishedSuggestion()
 
 }
 
+void UClueGameTurnBasedComponent::OnGameEnd()
+{
+	if (GetNetMode() == ENetMode::NM_DedicatedServer)
+	{
+		ClosingGame = true;		
+	}
+}
+
+void UClueGameTurnBasedComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	if (ClosingGame)
+	{
+		ClosingTimer = ClosingTimer - DeltaTime;
+
+		if (ClosingTimer <= 0)
+		{
+			UGameplayStatics::OpenLevel(GetWorld(), "CluelessGame", false, "");
+			ClosingGame = false;
+		}
+	}
+}
+
 // Called when the game starts
 void UClueGameTurnBasedComponent::BeginPlay()
 {
@@ -281,6 +303,8 @@ void UClueGameTurnBasedComponent::OnPlayerMakeAccusation(int RoleID, FString CWe
 		print("[Server: CluelessGameLogic] Notifies all Clients, Game Won!", FColor::Green);
 
 		GameState->OnMulticast_RPCNotifyGameWin(PlayerStaticData.CharacterName.ToString(), "Won");
+
+		OnGameEnd();
 	}
 	else
 	{

@@ -55,8 +55,12 @@ public:
 	UFUNCTION()
 		void OnFinishedSuggestion();
 
+	UFUNCTION()
+		void OnGameEnd();
+
 #pragma endregion Server Events Recieved From Client
 
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 protected:
 	// Called when the game starts
@@ -64,4 +68,9 @@ protected:
 
 	bool CheckSuggestCards(FString BlockID, FString WeaponID, FString RoleID, int PlayerSuggestionCounter);
 
+	UPROPERTY()
+	float ClosingTimer = 8.0;
+
+	UPROPERTY()
+	bool ClosingGame = false;
 };
