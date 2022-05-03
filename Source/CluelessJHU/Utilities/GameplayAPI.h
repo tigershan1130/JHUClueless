@@ -680,10 +680,10 @@ public:
 
 		for (auto& Entry : PlayerRelationMapping)
 		{			
-			if (Entry.Character->GetController() == nullptr)
-			{
-				continue;
-			}
+			//if (Entry.Character->GetController() == nullptr)
+			//{
+			//	continue;
+			//}
 
 			APlayerState* PlayerState = Entry.Character->GetPlayerState(); //TODO: Tiger when somebody disconnects, this will crash the game.
 			if (PlayerState != nullptr)

@@ -288,6 +288,11 @@ void ACGameStateBase::CheckActionAfterMovement()
 	{
 		PlayerTurnCachedData.SetAllowGameAction(EPlayerGameAction::Suggestion);
 	}
+	else
+	{
+		PlayerTurnCachedData.ClearGameAction(EPlayerGameAction::Suggestion);
+	}
+
 
 	if (GetNetMode() == ENetMode::NM_ListenServer)
 		OnRep_TurnInfoChanged();
@@ -459,11 +464,17 @@ void ACGameStateBase::OnRep_ShowCardTurnChanged()
 	if (SuggestionCachedData.IsInShowCardPhase == false)
 	{
 		// refresh turn ui
-		//print("[Game Logic Client] Show Card Turn Is Done", FColor::Green);
+		//print("[Game Logic Client] Not in Show Card Turn Phase", FColor::Red);
 
 		OnRep_TurnInfoChanged();
 		return;
 	}
+
+
+	// Error message
+	//FString ActivePlayers = FString::FromInt(AllActivePlayers.Num()); 
+	//FString Msg = "[Game Logic Client Show Card] " + ActivePlayers + " these many active Players";
+	//print(Msg, FColor::Yellow);
 
 	for (auto& Entry : AllActivePlayers)
 	{
