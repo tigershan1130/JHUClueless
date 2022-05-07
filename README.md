@@ -4,7 +4,7 @@ Clueless game JHU Foundation of Software Engineering Class
 ![alt text](https://github.com/tigershan1130/JHUClueless/blob/main/Picture.png)
 
 # Project Description:
-![alt text](https://github.com/tigershan1130/JHUClueless/blob/main/ProjectDescription.md)
+[Project Description](https://github.com/tigershan1130/JHUClueless/blob/main/ProjectDescription.md)
 
 # Instruction:
 1. Download Dedicated Server build from release
