@@ -18,6 +18,8 @@ UClueGameTurnBasedComponent::UClueGameTurnBasedComponent()
 }
 
 
+
+
 void UClueGameTurnBasedComponent::OnPlayerEndTurn()
 {
 	print("[Server: CluelessGameLogic] End Current Players Turn", FColor::Green);
